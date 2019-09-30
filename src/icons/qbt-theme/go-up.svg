@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 2000">
-  <path fill="#FFF" d="M1800 1162.5c0 6.3 0 6.3 0 0 0 12.5-6.3 18.8-12.5 31.3 6.3-6.3 12.5-18.8 12.5-31.3"/>
-  <path fill="#733737" d="M1650 1062.5s6.3 0 0 0c6.3 0 0 0 0 0z"/>
-  <path fill="#FFF" d="M1656.3 1062.5s-6.3 0 0 0c-6.3 0 0 0 0 0"/>
-  <path fill="#375273" d="M348.9 1347.9c-23.1 0-28.6-13.4-12.3-29.7l634.9-636.3c16.3-16.4 43-16.3 59.3.1l632.7 636.2c16.3 16.4 10.7 29.8-12.4 29.8H348.9z"/>
-</svg>
+<?xml version="1.0" standalone="no"?><!-- Generator: Gravit.io --><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="isolation:isolate" viewBox="0 0 22 22" width="22" height="22"><defs><clipPath id="_clipPath_2kOJ1cw2GKVMMuVTTsUZDRqbpxVxmTzB"><rect width="22" height="22"/></clipPath></defs><g clip-path="url(#_clipPath_2kOJ1cw2GKVMMuVTTsUZDRqbpxVxmTzB)"><path d=" M 17.875 15.63 C 17.588 15.629 17.302 15.516 17.084 15.293 L 11.02 9.109 L 4.91 15.25 C 4.471 15.691 3.762 15.689 3.326 15.244 C 2.89 14.8 2.893 14.08 3.332 13.639 L 10.236 6.701 C 10.456 6.48 10.743 6.369 11.029 6.37 C 11.316 6.371 11.602 6.484 11.82 6.707 L 18.674 13.696 C 19.11 14.14 19.107 14.858 18.668 15.299 C 18.448 15.52 18.162 15.631 17.875 15.63 L 17.875 15.63 Z " fill="#f8f8f8"/></g></svg>

@@ -1,53 +1,13 @@
-qBittorrent - A BitTorrent client in Qt
-------------------------------------------
+qBittorrent for macOS 10.14+ Dark mode with its theme modded to actually adhear to macOS environment.
 
-[![TravisCI Status](https://travis-ci.org/qbittorrent/qBittorrent.svg?branch=master)](https://travis-ci.org/qbittorrent/qBittorrent)
-[![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/qbittorrent/qBittorrent?branch=master&svg=true)](https://ci.appveyor.com/project/qbittorrent/qBittorrent)
-[![Coverity Status](https://scan.coverity.com/projects/5494/badge.svg)](https://scan.coverity.com/projects/5494)
-********************************
-### Description:
-qBittorrent is a bittorrent client programmed in C++ / Qt that uses
-libtorrent (sometimes called libtorrent-rasterbar) by Arvid Norberg.
+For the light themed version select the "masters" branch.
 
-It aims to be a good alternative to all other bittorrent clients
-out there. qBittorrent is fast, stable and provides unicode
-support as well as many features.
+Most of the graphics used is from https://github.com/keeferrourke/la-capitaine-icon-theme
 
-This product includes GeoLite data created by MaxMind, available from
-https://www.maxmind.com/
+These releases are pure alpha with everything, incl. the dependencies, built from development sources thanks to a script by Kolcha. If something doesn't work - I cannot help you.
 
-### Installation:
-For installation, follow the instructions from INSTALL file, but simple:
+Apart from the graphics there are two other differences from the original: sequential download is enabled by default and the version reported to the tracker is faked to be stable (according to the current stable official at the time of build).
 
-```
-./configure
-make && make install
-qbittorrent
-```
+To prevent the system constantly asking for a permission for incoming connections when the system firewall is enabled - enter the following in terminal:
 
-will install and execute qBittorrent hopefully without any problem.
-
-### Public key:
-Starting from v3.3.4 all source tarballs and binaries are signed.<br />
-The key currently used is 4096R/[5B7CC9A2](https://pgp.mit.edu/pks/lookup?op=get&search=0x6E4A2D025B7CC9A2) with fingerprint `D8F3DA77AAC6741053599C136E4A2D025B7CC9A2`.<br />
-You can also download it from [here](https://github.com/qbittorrent/qBittorrent/raw/master/5B7CC9A2.asc).<br />
-**PREVIOUSLY** the following key was used to sign the v3.3.4 source tarballs and v3.3.4 Windows installer **only**: 4096R/[520EC6F6](https://pgp.mit.edu/pks/lookup?op=get&search=0xA1ACCAE4520EC6F6) with fingerprint `F4A5FD201B117B1C2AB590E2A1ACCAE4520EC6F6`.<br />
-
-### Misc:
-For more information please visit:
-https://www.qbittorrent.org
-
-or our wiki here:
-http://wiki.qbittorrent.org
-
-Use the forum for troubleshooting before reporting bugs:
-http://forum.qbittorrent.org
-
-Please report any bug (or feature request) to:
-http://bugs.qbittorrent.org
-
-You can also meet me (sledgehammer_999) on IRC:
-`#qbittorrent on irc.freenode.net`
-
-------------------------------------------
-sledgehammer999 <sledgehammer999@qbittorrent.org>
+sudo codesign --force --deep --sign - /Applications/qbittorrent.app/

@@ -130,7 +130,7 @@ namespace
 CreateTorrentParams::CreateTorrentParams()
     : restored(false)
     , disableTempPath(false)
-    , sequential(false)
+    , sequential(true)
     , firstLastPiecePriority(false)
     , hasSeedStatus(false)
     , skipChecking(false)
