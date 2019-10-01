@@ -102,7 +102,7 @@ cd ../..
 
 # download and build qBittorrent - some magic comes here :)
 # download the sources
-qbt_branch=master               # qBittorrent version to use, use latest development version
+qbt_branch=masters               # qBittorrent version to use, use latest development version
 
 curl -L -s https://github.com/blahdy/qBittorrent/archive/{$qbt_branch}.tar.gz | tar xz
 [[ $? -eq 0 ]] || exit 1
