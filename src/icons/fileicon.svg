@@ -2,7 +2,7 @@
   <defs>
     <linearGradient id="a" y2="102.34" gradientUnits="userSpaceOnUse" x2="95.46" gradientTransform="translate(-.896 -.987) scale(1.012)" y1="93.621" x1="86.738">
       <stop stop-color="#fcfcfc" offset="0"/>
-      <stop stop-color="#575757" offset=".523"/>
+      <stop stop-color="#f8f8f8" offset=".523"/>
       <stop stop-color="#f0efef" offset=".775"/>
       <stop stop-color="#e3e1e1" offset=".901"/>
       <stop stop-color="#cecbcb" offset="1"/>
@@ -19,7 +19,7 @@
     </filter>
     <linearGradient id="i" y2="102.07" gradientUnits="userSpaceOnUse" x2="95.182" gradientTransform="translate(-18.896 -9.987) scale(1.012)" y1="93.621" x1="86.738">
       <stop stop-color="#fcfcfc" offset="0"/>
-      <stop stop-color="#575757" offset=".523"/>
+      <stop stop-color="#f8f8f8" offset=".523"/>
       <stop stop-color="#f0efef" offset=".723"/>
       <stop stop-color="#e3e1e1" offset=".89"/>
       <stop stop-color="#cecbcb" offset="1"/>
