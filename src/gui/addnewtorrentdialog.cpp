@@ -421,6 +421,7 @@ void AddNewTorrentDialog::categoryChanged(int index)
     if (m_ui->comboTTM->currentIndex() == 1) {
         QString savePath = BitTorrent::Session::instance()->categorySavePath(m_ui->categoryComboBox->currentText());
         m_ui->savePath->setSelectedPath(Utils::Fs::toNativePath(savePath));
+        updateDiskSpaceLabel();
     }
 }
 
@@ -625,8 +626,12 @@ void AddNewTorrentDialog::setupTreeview()
         m_ui->contentTreeView->hideColumn(REMAINING);
         m_ui->contentTreeView->hideColumn(AVAILABILITY);
 
-        // Expand root folder
-        m_ui->contentTreeView->setExpanded(m_contentModel->index(0, 0), true);
+        // Expand single-item folders recursively
+        QModelIndex currentIndex;
+        while (m_contentModel->rowCount(currentIndex) == 1) {
+            currentIndex = m_contentModel->index(0, 0, currentIndex);
+            m_ui->contentTreeView->setExpanded(currentIndex, true);
+        }
     }
 
     updateDiskSpaceLabel();
@@ -678,6 +683,7 @@ void AddNewTorrentDialog::TMMChanged(int index)
         m_ui->savePath->clear();
         QString savePath = BitTorrent::Session::instance()->categorySavePath(m_ui->categoryComboBox->currentText());
         m_ui->savePath->addItem(savePath);
+        updateDiskSpaceLabel();
     }
 }
 
