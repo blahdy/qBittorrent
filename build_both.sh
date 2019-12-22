@@ -23,7 +23,7 @@ curl -L https://github.com/openssl/openssl/archive/${openssl_ver}.tar.gz | tar x
 
 cd openssl-${openssl_ver}
 
-./config no-dynamic-engine no-tests zlib --prefix=${depsdir} -mmacosx-version-min=${min_macos_ver}
+./config no-comp no-deprecated no-dynamic-engine no-tests no-zlib --openssldir=/etc/ssl --prefix=${depsdir} -mmacosx-version-min=${min_macos_ver}
 [[ $? -eq 0 ]] || exit 1
 make -j4 || exit 1
 make install_sw || exit 1
@@ -36,7 +36,6 @@ cd qt5
 # these patches are completely optional, but without second one some configure options can't be set,
 # so they must be removed, and this will increase build time
 curl -L -s "https://www.dropbox.com/s/qkfdq5mz7lersy6/qt-no-assistant.patch?dl=1" | patch -p1 -d qttools
-curl -L -s "https://bugreports.qt.io/secure/attachment/87053/qtsvg-viewbox-quick-fix.patch" | patch -p1 -d qtsvg
 
 qtbuilddir="../build-qt"
 mkdir ${qtbuilddir} && cd ${qtbuilddir}
@@ -48,7 +47,7 @@ make install || exit 1
 cd ${workdir}
 
 # download and build Boost
-boost_ver=1.71.0                # Boost version to use
+boost_ver=1.72.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
 curl -L https://dl.bintray.com/boostorg/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
@@ -71,7 +70,7 @@ if [[ -f "/Applications/CMake.app/Contents/bin/cmake" ]]
 then
   cmake="/Applications/CMake.app/Contents/bin/cmake"
 else
-  cmake_ver=3.16.0-rc3
+  cmake_ver=3.16.2
   curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
   cmakedir=$(ls | grep cmake)
   cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
