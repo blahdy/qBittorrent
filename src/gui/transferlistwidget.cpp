@@ -141,6 +141,7 @@ TransferListWidget::TransferListWidget(QWidget *parent, MainWindow *mainWindow)
     m_sortFilterModel->setFilterKeyColumn(TransferListModel::TR_NAME);
     m_sortFilterModel->setFilterRole(Qt::DisplayRole);
     m_sortFilterModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    m_sortFilterModel->setSortRole(TransferListModel::UnderlyingDataRole);
 
     setModel(m_sortFilterModel);
 
@@ -506,12 +507,9 @@ void TransferListWidget::setSelectedTorrentsLocation()
     if (torrents.isEmpty()) return;
 
     const QString oldLocation = torrents[0]->savePath();
-    qDebug("Old location is %s", qUtf8Printable(oldLocation));
-
     const QString newLocation = QFileDialog::getExistingDirectory(this, tr("Choose save path"), oldLocation,
                                             QFileDialog::DontConfirmOverwrite | QFileDialog::ShowDirsOnly | QFileDialog::HideNameFilterDetails);
     if (newLocation.isEmpty() || !QDir(newLocation).exists()) return;
-    qDebug("New location is %s", qUtf8Printable(newLocation));
 
     // Actually move storage
     for (BitTorrent::TorrentHandle *const torrent : torrents) {
@@ -1002,7 +1000,7 @@ void TransferListWidget::renameSelectedTorrent()
     if (!torrent) return;
 
     // Ask for a new Name
-    bool ok;
+    bool ok = false;
     QString name = AutoExpandableDialog::getText(this, tr("Rename"), tr("New name:"), QLineEdit::Normal, torrent->name(), &ok);
     if (ok && !name.isEmpty()) {
         name.replace(QRegularExpression("\r?\n|\r"), " ");
@@ -1219,7 +1217,7 @@ void TransferListWidget::displayListMenu(const QPoint &)
     }
 
     // Tag Menu
-    QStringList tags(BitTorrent::Session::instance()->tags().toList());
+    QStringList tags(BitTorrent::Session::instance()->tags().values());
     std::sort(tags.begin(), tags.end(), Utils::String::naturalLessThan<Qt::CaseInsensitive>);
 
     QMenu *tagsMenu = listMenu->addMenu(UIThemeManager::instance()->getIcon("view-categories"), tr("Tags"));
