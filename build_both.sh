@@ -25,7 +25,7 @@ cd openssl-${openssl_ver}
 
 ./config no-comp no-deprecated no-dynamic-engine no-tests no-zlib --openssldir=/etc/ssl --prefix=${depsdir} -mmacosx-version-min=${min_macos_ver}
 [[ $? -eq 0 ]] || exit 1
-make -j4 || exit 1
+make -j$(sysctl -n hw.ncpu) || exit 1
 make install_sw || exit 1
 
 cd ..
@@ -41,16 +41,17 @@ qtbuilddir="../build-qt"
 mkdir ${qtbuilddir} && cd ${qtbuilddir}
 ${workdir}/qt5/configure -prefix "${depsdir}" -opensource -confirm-license -release -appstore-compliant -c++std c++14 -no-pch -I "${depsdir}/include" -L "${depsdir}/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-sql -no-feature-concurrent
 [[ $? -eq 0 ]] || exit 1
-make -j4 || exit 1
+make -j$(sysctl -n hw.ncpu) || exit 1
 make install || exit 1
 
 cd ${workdir}
 
 # download and build Boost
-boost_ver=1.72.0                # Boost version to use
+boost_ver=1.73.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
-curl -L https://dl.bintray.com/boostorg/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
+
+curl -L https://bintray.com/boostorg/develop/download_file?file_path=boost_${boost_ver_u}-snapshot.tar.bz2 | tar xj
 [[ $? -eq 0 ]] || exit 1
 
 cd boost_${boost_ver_u}
@@ -70,7 +71,7 @@ if [[ -f "/Applications/CMake.app/Contents/bin/cmake" ]]
 then
   cmake="/Applications/CMake.app/Contents/bin/cmake"
 else
-  cmake_ver=3.16.2
+  cmake_ver=3.17.0
   curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
   cmakedir=$(ls | grep cmake)
   cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
@@ -135,7 +136,7 @@ mkdir "$build_dir"
 cd "$build_dir"
 
 $QT_ROOT/bin/qmake -config release -r "$SRC_PATH/qbittorrent.pro"
-make -j4
+make -j$(sysctl -n hw.ncpu)
 [[ $? == 0 ]] || exit 1
 
 # deploy Qt' libraries for an app
@@ -219,7 +220,7 @@ mkdir "$build_dir"
 cd "$build_dir"
 
 $QT_ROOT/bin/qmake -config release -r "$SRC_PATH/qbittorrent.pro"
-make -j4
+make -j$(sysctl -n hw.ncpu)
 [[ $? == 0 ]] || exit 1
 
 # deploy Qt' libraries for an app
