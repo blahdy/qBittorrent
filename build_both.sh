@@ -6,7 +6,7 @@ depsdir="${workdir%/}/ext"      # all dependencies will be placed here
 cd ${workdir}
 
 # download Qt from Git repository
-qt_branch=5.14                  # Qt version to use
+qt_branch=dev                  # Qt version to use
 git clone https://code.qt.io/qt/qt5.git
 cd qt5
 git checkout ${qt_branch}
@@ -47,11 +47,10 @@ make install || exit 1
 cd ${workdir}
 
 # download and build Boost
-boost_ver=1.73.0                # Boost version to use
+boost_ver=1.72.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
-
-curl -L https://bintray.com/boostorg/develop/download_file?file_path=boost_${boost_ver_u}-snapshot.tar.bz2 | tar xj
+curl -L https://dl.bintray.com/boostorg/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
 [[ $? -eq 0 ]] || exit 1
 
 cd boost_${boost_ver_u}
