@@ -6,7 +6,7 @@ depsdir="${workdir%/}/ext"      # all dependencies will be placed here
 cd ${workdir}
 
 # download Qt from Git repository
-qt_branch=dev                  # Qt version to use
+qt_branch=5.15                  # Qt version to use
 git clone https://code.qt.io/qt/qt5.git
 cd qt5
 git checkout ${qt_branch}
