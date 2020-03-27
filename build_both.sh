@@ -79,7 +79,7 @@ fi
 
 lt_branch=RC_1_2                # libtorrent version to use, use latest development version from 1.2.x versions
 
-curl -L https://github.com/arvidn/libtorrent/archive/${lt_branch}.tar.gz | tar xz
+curl -L https://github.com/blahdy/libtorrent/archive/${lt_branch}.tar.gz | tar xz
 [[ $? -eq 0 ]] || exit 1
 
 cd libtorrent-${lt_branch}
