@@ -70,7 +70,7 @@ if [[ -f "/Applications/CMake.app/Contents/bin/cmake" ]]
 then
   cmake="/Applications/CMake.app/Contents/bin/cmake"
 else
-  cmake_ver=3.17.0
+  cmake_ver=3.17.1
   curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
   cmakedir=$(ls | grep cmake)
   cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
@@ -79,7 +79,7 @@ fi
 
 lt_branch=RC_1_2                # libtorrent version to use, use latest development version from 1.2.x versions
 
-curl -L https://github.com/blahdy/libtorrent/archive/${lt_branch}.tar.gz | tar xz
+curl -L https://github.com/arvidn/libtorrent/archive/${lt_branch}.tar.gz | tar xz
 [[ $? -eq 0 ]] || exit 1
 
 cd libtorrent-${lt_branch}
@@ -89,8 +89,8 @@ cd libtorrent-${lt_branch}
 curl -L -s "https://www.dropbox.com/s/ym7fegg4f3hwwnt/lt-static-link-warning-fix.patch?dl=1" | patch -p1
 
 mkdir build && cd build
-${cmake} -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -Ddeprecated-functions=OFF -DCMAKE_INSTALL_PREFIX=${depsdir} ..
-make VERBOSE=1 -j4 || exit 1
+${cmake} -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=${depsdir} ..
+make VERBOSE=1 -j$(sysctl -n hw.ncpu) || exit 1
 make install || exit 1
 
 cd ../..
