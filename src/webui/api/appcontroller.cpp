@@ -296,6 +296,8 @@ void AppController::preferencesAction()
     // Outgoing ports
     data["outgoing_ports_min"] = session->outgoingPortsMin();
     data["outgoing_ports_max"] = session->outgoingPortsMax();
+    // UPnP lease duration
+    data["upnp_lease_duration"] = session->UPnPLeaseDuration();
     // uTP-TCP mixed mode
     data["utp_tcp_mixed_mode"] = static_cast<int>(session->utpMixedMode());
     // Multiple connections per IP
@@ -307,8 +309,6 @@ void AppController::preferencesAction()
     data["upload_slots_behavior"] = static_cast<int>(session->chokingAlgorithm());
     // Seed choking algorithm
     data["upload_choking_algorithm"] = static_cast<int>(session->seedChokingAlgorithm());
-    // Super seeding
-    data["enable_super_seeding"] = session->isSuperSeedingEnabled();
     // Announce
     data["announce_to_all_trackers"] = session->announceToAllTrackers();
     data["announce_to_all_tiers"] = session->announceToAllTiers();
@@ -717,6 +717,9 @@ void AppController::setPreferencesAction()
         session->setOutgoingPortsMin(it.value().toInt());
     if (hasKey("outgoing_ports_max"))
         session->setOutgoingPortsMax(it.value().toInt());
+    // UPnP lease duration
+    if (hasKey("upnp_lease_duration"))
+        session->setUPnPLeaseDuration(it.value().toInt());
     // uTP-TCP mixed mode
     if (hasKey("utp_tcp_mixed_mode"))
         session->setUtpMixedMode(static_cast<BitTorrent::MixedModeAlgorithm>(it.value().toInt()));
@@ -734,9 +737,6 @@ void AppController::setPreferencesAction()
     // Seed choking algorithm
     if (hasKey("upload_choking_algorithm"))
         session->setSeedChokingAlgorithm(static_cast<BitTorrent::SeedChokingAlgorithm>(it.value().toInt()));
-    // Super seeding
-    if (hasKey("enable_super_seeding"))
-        session->setSuperSeedingEnabled(it.value().toBool());
     // Announce
     if (hasKey("announce_to_all_trackers"))
         session->setAnnounceToAllTrackers(it.value().toBool());
