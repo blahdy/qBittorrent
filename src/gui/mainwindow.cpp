@@ -28,6 +28,8 @@
 
 #include "mainwindow.h"
 
+#include <chrono>
+
 #include <QCloseEvent>
 #include <QDebug>
 #include <QDesktopServices>
@@ -99,9 +101,6 @@
 #include "programupdater.h"
 #endif
 
-#define TIME_TRAY_BALLOON 5000
-#define PREVENT_SUSPEND_INTERVAL 60000
-
 namespace
 {
 #define SETTINGS_KEY(name) "GUI/" name
@@ -118,6 +117,11 @@ namespace
 
     // Misc
     const QString KEY_DOWNLOAD_TRACKER_FAVICON = QStringLiteral(SETTINGS_KEY("DownloadTrackerFavicon"));
+
+    const std::chrono::seconds PREVENT_SUSPEND_INTERVAL {60};
+#if !defined(Q_OS_MACOS)
+    const int TIME_TRAY_BALLOON = 5000;
+#endif
 
     // just a shortcut
     inline SettingsStorage *settings()
@@ -487,7 +491,7 @@ int MainWindow::executionLogMsgTypes() const
 
 void MainWindow::setExecutionLogMsgTypes(const int value)
 {
-    m_executionLog->showMsgTypes(static_cast<Log::MsgTypes>(value));
+    m_executionLog->setMessageTypes(static_cast<Log::MsgTypes>(value));
     settings()->storeValue(KEY_EXECUTIONLOG_TYPES, value);
 }
 
@@ -776,8 +780,9 @@ void MainWindow::cleanup()
     if (m_systrayCreator)
         m_systrayCreator->stop();
 #endif
-    if (m_preventTimer)
-        m_preventTimer->stop();
+
+    m_preventTimer->stop();
+
 #if (defined(Q_OS_WIN) || defined(Q_OS_MACOS))
     m_programUpdateTimer->stop();
 #endif
@@ -1401,7 +1406,7 @@ void MainWindow::showStatusBar(bool show)
     }
 }
 
-void MainWindow::loadPreferences(bool configureSession)
+void MainWindow::loadPreferences(const bool configureSession)
 {
     Logger::instance()->addMessage(tr("Options were saved successfully."));
     const Preferences *const pref = Preferences::instance();
@@ -1451,8 +1456,11 @@ void MainWindow::loadPreferences(bool configureSession)
 
     showStatusBar(pref->isStatusbarDisplayed());
 
-    if ((pref->preventFromSuspendWhenDownloading() || pref->preventFromSuspendWhenSeeding()) && !m_preventTimer->isActive()) {
-        m_preventTimer->start(PREVENT_SUSPEND_INTERVAL);
+    if (pref->preventFromSuspendWhenDownloading() || pref->preventFromSuspendWhenSeeding()) {
+        if (!m_preventTimer->isActive()) {
+            updatePowerManagementState();
+            m_preventTimer->start(PREVENT_SUSPEND_INTERVAL);
+        }
     }
     else {
         m_preventTimer->stop();
@@ -1866,7 +1874,7 @@ void MainWindow::on_actionExecutionLogs_triggered(bool checked)
 {
     if (checked) {
         Q_ASSERT(!m_executionLog);
-        m_executionLog = new ExecutionLogWidget(m_tabs, static_cast<Log::MsgType>(executionLogMsgTypes()));
+        m_executionLog = new ExecutionLogWidget(static_cast<Log::MsgType>(executionLogMsgTypes()), m_tabs);
 #ifdef Q_OS_MACOS
         m_tabs->addTab(m_executionLog, tr("Execution Log"));
 #else

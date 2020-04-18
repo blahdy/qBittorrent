@@ -21,6 +21,7 @@ HEADERS += \
     $$PWD/bittorrent/sessionstatus.h \
     $$PWD/bittorrent/torrentcreatorthread.h \
     $$PWD/bittorrent/torrenthandle.h \
+    $$PWD/bittorrent/torrenthandleimpl.h \
     $$PWD/bittorrent/torrentinfo.h \
     $$PWD/bittorrent/tracker.h \
     $$PWD/bittorrent/trackerentry.h \
@@ -73,6 +74,7 @@ HEADERS += \
     $$PWD/utils/foreignapps.h \
     $$PWD/utils/fs.h \
     $$PWD/utils/gzip.h \
+    $$PWD/utils/io.h \
     $$PWD/utils/misc.h \
     $$PWD/utils/net.h \
     $$PWD/utils/password.h \
@@ -98,6 +100,7 @@ SOURCES += \
     $$PWD/bittorrent/session.cpp \
     $$PWD/bittorrent/torrentcreatorthread.cpp \
     $$PWD/bittorrent/torrenthandle.cpp \
+    $$PWD/bittorrent/torrenthandleimpl.cpp \
     $$PWD/bittorrent/torrentinfo.cpp \
     $$PWD/bittorrent/tracker.cpp \
     $$PWD/bittorrent/trackerentry.cpp \
@@ -143,6 +146,7 @@ SOURCES += \
     $$PWD/utils/foreignapps.cpp \
     $$PWD/utils/fs.cpp \
     $$PWD/utils/gzip.cpp \
+    $$PWD/utils/io.cpp \
     $$PWD/utils/misc.cpp \
     $$PWD/utils/net.cpp \
     $$PWD/utils/password.cpp \

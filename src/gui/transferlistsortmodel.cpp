@@ -31,6 +31,7 @@
 #include <QDateTime>
 #include <QStringList>
 
+#include "base/bittorrent/infohash.h"
 #include "base/bittorrent/torrenthandle.h"
 #include "base/global.h"
 #include "base/types.h"
@@ -96,7 +97,7 @@ bool TransferListSortModel::lessThan_impl(const QModelIndex &left, const QModelI
 
     const auto invokeLessThanForColumn = [this, &left, &right](const int column) -> bool
     {
-        return lessThan_impl(left.sibling(left.row(), column), right.sibling(left.row(), column));
+        return lessThan_impl(left.sibling(left.row(), column), right.sibling(right.row(), column));
     };
 
     const int sortColumn = left.column();
