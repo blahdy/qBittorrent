@@ -62,7 +62,7 @@ namespace BitTorrent
         QSet<QString> tags;
         QString savePath;
         bool disableTempPath = false;
-        bool sequential = false;
+        bool sequential = true;
         bool firstLastPiecePriority = false;
         bool hasSeedStatus = false;
         bool skipChecking = false;
