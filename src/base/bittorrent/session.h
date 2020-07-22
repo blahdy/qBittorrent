@@ -34,6 +34,8 @@
 #include <vector>
 
 #include <libtorrent/fwd.hpp>
+#include <libtorrent/torrent_handle.hpp>
+#include <libtorrent/version.hpp>
 
 #include <QHash>
 #include <QPointer>
@@ -46,6 +48,10 @@
 #include "cachestatus.h"
 #include "sessionstatus.h"
 #include "torrentinfo.h"
+
+#if ((LIBTORRENT_VERSION_NUM >= 10206) && !defined(Q_OS_WIN))
+#define HAS_HTTPS_TRACKER_VALIDATION
+#endif
 
 class QFile;
 class QNetworkConfiguration;
@@ -263,8 +269,8 @@ namespace BitTorrent
         void setPeXEnabled(bool enabled);
         bool isAddTorrentPaused() const;
         void setAddTorrentPaused(bool value);
-        bool isCreateTorrentSubfolder() const;
-        void setCreateTorrentSubfolder(bool value);
+        bool isKeepTorrentTopLevelFolder() const;
+        void setKeepTorrentTopLevelFolder(bool value);
         bool isTrackerEnabled() const;
         void setTrackerEnabled(bool enabled);
         bool isAppendExtensionEnabled() const;
@@ -401,6 +407,8 @@ namespace BitTorrent
         void setUtpMixedMode(MixedModeAlgorithm mode);
         bool multiConnectionsPerIpEnabled() const;
         void setMultiConnectionsPerIpEnabled(bool enabled);
+        bool validateHTTPSTrackerCertificate() const;
+        void setValidateHTTPSTrackerCertificate(bool enabled);
         bool isTrackerFilteringEnabled() const;
         void setTrackerFilteringEnabled(bool enabled);
         QStringList bannedIPs() const;
@@ -522,7 +530,7 @@ namespace BitTorrent
     private:
         struct MoveStorageJob
         {
-            TorrentHandleImpl *torrent;
+            lt::torrent_handle torrentHandle;
             QString path;
             MoveStorageMode mode;
         };
@@ -530,7 +538,7 @@ namespace BitTorrent
         struct RemovingTorrentData
         {
             QString name;
-            QString savePathToRemove;
+            QString pathToRemove;
             DeleteOption deleteOption;
         };
 
@@ -593,9 +601,7 @@ namespace BitTorrent
         void handleListenFailedAlert(const lt::listen_failed_alert *p);
         void handleExternalIPAlert(const lt::external_ip_alert *p);
         void handleSessionStatsAlert(const lt::session_stats_alert *p);
-#if (LIBTORRENT_VERSION_NUM >= 10200)
         void handleAlertsDroppedAlert(const lt::alerts_dropped_alert *p) const;
-#endif
         void handleStorageMovedAlert(const lt::storage_moved_alert *p);
         void handleStorageMovedFailedAlert(const lt::storage_moved_failed_alert *p);
 #if (LIBTORRENT_VERSION_NUM >= 10204)
@@ -611,7 +617,7 @@ namespace BitTorrent
         std::vector<lt::alert *> getPendingAlerts(lt::time_duration time = lt::time_duration::zero()) const;
 
         void moveTorrentStorage(const MoveStorageJob &job) const;
-        void handleMoveTorrentStorageJobFinished(const QString &errorMessage = {});
+        void handleMoveTorrentStorageJobFinished();
 
         // BitTorrent
         lt::session *m_nativeSession = nullptr;
@@ -665,12 +671,13 @@ namespace BitTorrent
         CachedSettingValue<bool> m_isUTPRateLimited;
         CachedSettingValue<MixedModeAlgorithm> m_utpMixedMode;
         CachedSettingValue<bool> m_multiConnectionsPerIpEnabled;
+        CachedSettingValue<bool> m_validateHTTPSTrackerCertificate;
         CachedSettingValue<bool> m_isAddTrackersEnabled;
         CachedSettingValue<QString> m_additionalTrackers;
         CachedSettingValue<qreal> m_globalMaxRatio;
         CachedSettingValue<int> m_globalMaxSeedingMinutes;
         CachedSettingValue<bool> m_isAddTorrentPaused;
-        CachedSettingValue<bool> m_isCreateTorrentSubfolder;
+        CachedSettingValue<bool> m_isKeepTorrentTopLevelFolder;
         CachedSettingValue<bool> m_isAppendExtensionEnabled;
         CachedSettingValue<uint> m_refreshInterval;
         CachedSettingValue<bool> m_isPreallocationEnabled;
@@ -758,5 +765,10 @@ namespace BitTorrent
         static Session *m_instance;
     };
 }
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
+Q_DECLARE_METATYPE(std::shared_ptr<lt::entry>)
+const int sharedPtrLtEntryTypeID = qRegisterMetaType<std::shared_ptr<lt::entry>>();
+#endif
 
 #endif // BITTORRENT_SESSION_H

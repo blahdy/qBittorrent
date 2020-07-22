@@ -37,8 +37,8 @@
 #include <QStyle>
 #include <QStyledItemDelegate>
 
+#include "gui/uithememanager.h"
 #include "logmodel.h"
-#include "uithememanager.h"
 
 namespace
 {
@@ -59,7 +59,7 @@ namespace
                                                  , index.data(BaseLogModel::MessageRole).toString());
     }
 
-    class LogItemDelegate : public QStyledItemDelegate
+    class LogItemDelegate final : public QStyledItemDelegate
     {
     public:
         using QStyledItemDelegate::QStyledItemDelegate;
@@ -70,18 +70,20 @@ namespace
             painter->save();
             QStyledItemDelegate::paint(painter, option, index); // paints background, focus rect and selection rect
 
-            const QStyle *style = option.widget ? option.widget->style() : QApplication::style();;
-            const QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &option, option.widget)
-                                   .adjusted(1, 0, 0, 0); // shift 1 to avoid text being too close to focus rect
+            const QStyle *style = option.widget ? option.widget->style() : QApplication::style();
+            const QRect textRect = option.rect.adjusted(1, 0, 0, 0); // shift 1 to avoid text being too close to focus rect
 
+            // for unknown reasons (fixme) painter won't accept some font properties
+            // until they are set explicitly, and we have to manually set some font properties
             QFont font = option.font;
-            if (option.font.pointSize() > 0)
-                font.setPointSize(option.font.pointSize()); // somehow this needs to be set directly otherwise painter will use default font
+            font.setFamily(option.font.family());
+            if (option.font.pointSizeF() > 0) // for better scaling we use floating point version
+                font.setPointSizeF(option.font.pointSizeF());
             painter->setFont(font);
 
             const QPen originalPen = painter->pen();
             QPen coloredPen = originalPen;
-            coloredPen.setColor(Qt::darkGray);
+            coloredPen.setColor(index.data(BaseLogModel::TimeForegroundRole).value<QColor>());
             painter->setPen(coloredPen);
             const QString time = index.data(BaseLogModel::TimeRole).toString();
             style->drawItemText(painter, textRect, option.displayAlignment, option.palette, (option.state & QStyle::State_Enabled), time);
@@ -92,7 +94,7 @@ namespace
             style->drawItemText(painter, textRect.adjusted(separatorCoordinateX, 0, 0, 0), option.displayAlignment, option.palette
                                 , (option.state & QStyle::State_Enabled), SEPARATOR);
 
-            coloredPen.setColor(index.data(BaseLogModel::ForegroundRole).value<QColor>());
+            coloredPen.setColor(index.data(BaseLogModel::MessageForegroundRole).value<QColor>());
             painter->setPen(coloredPen);
             const int messageCoordinateX = separatorCoordinateX + horizontalAdvance(fontMetrics, SEPARATOR);
             style->drawItemText(painter, textRect.adjusted(messageCoordinateX, 0, 0, 0), option.displayAlignment, option.palette

@@ -31,8 +31,6 @@
 
 #include <type_traits>
 
-const QString QB_EXT {QStringLiteral(".!qB")};
-
 namespace BitTorrent
 {
     uint qHash(const BitTorrent::TorrentState key, const uint seed)
