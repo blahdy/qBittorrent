@@ -52,11 +52,11 @@
 #include "base/net/geoipmanager.h"
 #include "base/net/reverseresolution.h"
 #include "base/preferences.h"
+#include "gui/uithememanager.h"
 #include "peerlistdelegate.h"
 #include "peerlistsortmodel.h"
 #include "peersadditiondialog.h"
 #include "propertieswidget.h"
-#include "uithememanager.h"
 
 struct PeerEndpoint
 {
@@ -256,7 +256,8 @@ void PeerListWidget::showPeerListMenu(const QPoint &)
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
     // Add Peer Action
-    if (!torrent->isQueued() && !torrent->isChecking()) {
+    // Do not allow user to add peers in a private torrent
+    if (!torrent->isQueued() && !torrent->isChecking() && !torrent->isPrivate()) {
         const QAction *addPeerAct = menu->addAction(UIThemeManager::instance()->getIcon("user-group-new"), tr("Add a new peer..."));
         connect(addPeerAct, &QAction::triggered, this, [this, torrent]()
         {
@@ -450,7 +451,14 @@ void PeerListWidget::wheelEvent(QWheelEvent *event)
         // Shift + scroll = horizontal scroll
         event->accept();
 
-        QWheelEvent scrollHEvent(event->pos(), event->globalPos(), event->delta(), event->buttons(), event->modifiers(), Qt::Horizontal);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+        QWheelEvent scrollHEvent(event->position(), event->globalPosition()
+            , event->pixelDelta(), event->angleDelta().transposed(), event->buttons()
+            , event->modifiers(), event->phase(), event->inverted(), event->source());
+#else
+        QWheelEvent scrollHEvent(event->pos(), event->globalPos()
+            , event->delta(), event->buttons(), event->modifiers(), Qt::Horizontal);
+#endif
         QTreeView::wheelEvent(&scrollHEvent);
         return;
     }

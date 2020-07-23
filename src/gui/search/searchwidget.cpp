@@ -46,11 +46,11 @@
 #include "base/search/searchhandler.h"
 #include "base/search/searchpluginmanager.h"
 #include "base/utils/foreignapps.h"
-#include "mainwindow.h"
+#include "gui/mainwindow.h"
+#include "gui/uithememanager.h"
 #include "pluginselectdialog.h"
 #include "searchjobwidget.h"
 #include "ui_searchwidget.h"
-#include "uithememanager.h"
 
 #define SEARCHHISTORY_MAXSIZE 50
 #define URL_COLUMN 5
@@ -99,7 +99,7 @@ SearchWidget::SearchWidget(MainWindow *mainWindow)
            << tr("<b>&quot;foo bar&quot;</b>: search for <b>foo bar</b>",
                  "Search phrase example, illustrates quotes usage, double quoted"
                  "pair of space delimited words, the whole pair is highlighted")
-           << "</p></body></html>" << flush;
+           << "</p></body></html>";
     m_ui->lineEditSearchPattern->setToolTip(searchPatternHint);
 
 #ifndef Q_OS_MACOS

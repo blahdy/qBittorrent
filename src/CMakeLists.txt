@@ -1,14 +1,3 @@
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-
-# If C++14 is available, use it as libtorent ABI depends on 11/14 version
-if (cxx_std_14 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
-    message(STATUS "Building in C++14 mode")
-    set(CMAKE_CXX_STANDARD "14")
-else()
-    message(STATUS "Building in C++11 mode")
-    set(CMAKE_CXX_STANDARD "11")
-endif()
-
 include(MacroQbtCompilerSettings)
 qbt_set_compiler_options()
 
@@ -18,23 +7,15 @@ find_package(Boost ${requiredBoostVersion} REQUIRED)
 find_package(LibtorrentRasterbar ${requiredLibtorrentVersion} REQUIRED)
 find_package(OpenSSL ${requiredOpensslVersion} REQUIRED)
 
-if (Boost_VERSION VERSION_LESS 106000)
+if (Boost_VERSION_STRING VERSION_LESS 1.60.0)
     add_definitions(-DBOOST_NO_CXX11_RVALUE_REFERENCES)
 endif()
 
 find_package(Qt5 ${requiredQtVersion} REQUIRED COMPONENTS Core Network Xml LinguistTools)
-find_package(Qt5Widgets ${requiredQtVersion})
-if (Qt5Widgets_FOUND)
+if (GUI)
+    find_package(Qt5Widgets ${requiredQtVersion} REQUIRED)
     find_package(Qt5DBus ${requiredQtVersion})
-else()
-    add_definitions(-DDISABLE_GUI)
 endif()
-
-set_package_properties(Qt5Widgets PROPERTIES
-    DESCRIPTION "Set of components for creating classic desktop-style UIs for the Qt5 framework"
-    PURPOSE "Enables qBittorrent GUI. Unneeded for headless configuration."
-    TYPE OPTIONAL
-)
 
 set_package_properties(Qt5DBus PROPERTIES
     DESCRIPTION "Qt5 module for inter-process communication over the D-Bus protocol"
@@ -48,13 +29,14 @@ if (APPLE)
     # Workaround CMake bug (autogen does not pass required parameters to moc)
     # Relevant issue: https://gitlab.kitware.com/cmake/cmake/issues/18041
     list(APPEND CMAKE_AUTOMOC_MOC_OPTIONS -DQ_OS_MACOS -DQ_OS_DARWIN)
-endif ()
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # defines
 add_definitions(-DQT_DEPRECATED_WARNINGS)
 add_definitions(-DQT_NO_CAST_TO_ASCII)
+add_definitions(-DQT_NO_CAST_FROM_BYTEARRAY)
 add_definitions(-DQT_USE_QSTRINGBUILDER)
 add_definitions(-DQT_STRICT_ITERATORS)
 
@@ -71,10 +53,10 @@ configure_file(config.h.cmakein ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 add_subdirectory(app)
 add_subdirectory(base)
 
-if (Qt5Widgets_FOUND)
+if (GUI)
     add_subdirectory(gui)
 endif ()
 
-if (NOT DISABLE_WEBUI)
+if (WEBUI)
     add_subdirectory(webui)
 endif()

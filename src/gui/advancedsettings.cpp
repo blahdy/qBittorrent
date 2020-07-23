@@ -108,6 +108,9 @@ enum AdvSettingsRows
 #endif
     UTP_MIX_MODE,
     MULTI_CONNECTIONS_PER_IP,
+#ifdef HAS_HTTPS_TRACKER_VALIDATION
+    VALIDATE_HTTPS_TRACKER_CERTIFICATE,
+#endif
     // embedded tracker
     TRACKER_STATUS,
     TRACKER_PORT,
@@ -215,6 +218,10 @@ void AdvancedSettings::saveAdvancedSettings()
     session->setUtpMixedMode(static_cast<BitTorrent::MixedModeAlgorithm>(m_comboBoxUtpMixedMode.currentIndex()));
     // multiple connections per IP
     session->setMultiConnectionsPerIpEnabled(m_checkBoxMultiConnectionsPerIp.isChecked());
+#ifdef HAS_HTTPS_TRACKER_VALIDATION
+    // Validate HTTPS tracker certificate
+    session->setValidateHTTPSTrackerCertificate(m_checkBoxValidateHTTPSTrackerCertificate.isChecked());
+#endif
     // Recheck torrents on completion
     pref->recheckTorrentsOnCompletion(m_checkBoxRecheckCompleted.isChecked());
     // Transfer list refresh interval
@@ -498,6 +505,13 @@ void AdvancedSettings::loadAdvancedSettings()
     // multiple connections per IP
     m_checkBoxMultiConnectionsPerIp.setChecked(session->multiConnectionsPerIpEnabled());
     addRow(MULTI_CONNECTIONS_PER_IP, tr("Allow multiple connections from the same IP address"), &m_checkBoxMultiConnectionsPerIp);
+#ifdef HAS_HTTPS_TRACKER_VALIDATION
+    // Validate HTTPS tracker certificate
+    m_checkBoxValidateHTTPSTrackerCertificate.setChecked(session->validateHTTPSTrackerCertificate());
+    addRow(VALIDATE_HTTPS_TRACKER_CERTIFICATE, (tr("Validate HTTPS tracker certificates")
+            + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#validate_https_trackers", "(?)"))
+            , &m_checkBoxValidateHTTPSTrackerCertificate);
+#endif
     // Recheck completed torrents
     m_checkBoxRecheckCompleted.setChecked(pref->recheckTorrentsOnCompletion());
     addRow(RECHECK_COMPLETED, tr("Recheck torrents on completion"), &m_checkBoxRecheckCompleted);
@@ -531,10 +545,10 @@ void AdvancedSettings::loadAdvancedSettings()
         m_comboBoxInterface.addItem(session->networkInterfaceName(), currentInterface);
         m_comboBoxInterface.setCurrentIndex(i);
     }
-    addRow(NETWORK_IFACE, tr("Network Interface (requires restart)"), &m_comboBoxInterface);
+    addRow(NETWORK_IFACE, tr("Network Interface"), &m_comboBoxInterface);
     // Network interface address
     updateInterfaceAddressCombo();
-    addRow(NETWORK_IFACE_ADDRESS, tr("Optional IP Address to bind to (requires restart)"), &m_comboBoxInterfaceAddress);
+    addRow(NETWORK_IFACE_ADDRESS, tr("Optional IP Address to bind to"), &m_comboBoxInterfaceAddress);
     // Announce IP
     m_lineEditAnnounceIP.setText(session->announceIP());
     addRow(ANNOUNCE_IP, tr("IP Address to report to trackers (requires restart)"), &m_lineEditAnnounceIP);

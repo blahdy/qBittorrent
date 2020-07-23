@@ -40,8 +40,6 @@ class QDateTime;
 class QStringList;
 class QUrl;
 
-extern const QString QB_EXT;
-
 namespace BitTorrent
 {
     enum class DownloadPriority;
@@ -192,7 +190,6 @@ namespace BitTorrent
         virtual QString fileName(int index) const = 0;
         virtual qlonglong fileSize(int index) const = 0;
         virtual QStringList absoluteFilePaths() const = 0;
-        virtual QStringList absoluteFilePathsUnwanted() const = 0;
         virtual QVector<DownloadPriority> filePriorities() const = 0;
 
         virtual TorrentInfo info() const = 0;
@@ -288,6 +285,7 @@ namespace BitTorrent
         virtual void addUrlSeeds(const QVector<QUrl> &urlSeeds) = 0;
         virtual void removeUrlSeeds(const QVector<QUrl> &urlSeeds) = 0;
         virtual bool connectPeer(const PeerAddress &peerAddress) = 0;
+        virtual void clearPeers() = 0;
 
         virtual QString createMagnetURI() const = 0;
 
