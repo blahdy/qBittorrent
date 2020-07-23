@@ -166,6 +166,87 @@ fi
 # move created .dmg file to user's Downloads directory, it is writable everywhere
 mv "$out_file" "$HOME/Downloads/"
 
+cd ${workdir}
+
+# download and build qBittorrent - some magic comes here :)
+# download the sources
+qbt_branch=masters               # qBittorrent version to use, use latest development version
+
+curl -L https://github.com/blahdy/qBittorrent/archive/{$qbt_branch}.tar.gz | tar xz
+
+cd qBittorrent-${qbt_branch}
+
+# as so as it is impossible (or pretty hard) to get work autotools build system on macOS,
+# there are only 2 options what to use to build qBittorrent: CMake and qmake.
+# I don't like CMake in general, moreover it is pretty hard to use with Qt, especially from custom path.
+# thereby I decided to use "Qt's native build system" - qmake. it is maybe not so convenient in case of
+# qBittorrent build configuration, but developers envisaged it and created special file for "user configuration".
+# so, download my recommended project configuration (conf.pri)
+curl -O -J -L -s "https://www.dropbox.com/s/apfv9ofhhftderj/conf.pri?dl=1"
+# Note: exactly the same config can be used to build qBittorrent in QtCreator.
+
+# I don't like the way how official qBittorrent app is packaged for macOS, so I do it in my own way.
+# I didn't suggest any patches used there to qBittorrent developers/maintainers, because I'm not Apple
+# developer and strictly don't know the "true" methods, and these changes were made in my own opinion.
+# patches are completely optional.
+# first patch disables Qt translations deployment, I'll do it later.
+curl -L -s "https://www.dropbox.com/s/d6sdrvz2zpjnywn/qbt-no-predef-qt-stuff.patch?dl=1" | patch -p1
+
+# better HiDPI support
+curl -L -s "https://www.dropbox.com/s/2crekp814e5m2vj/hidpi-hacks-new.patch?dl=1" | patch -p1
+
+# next part of this script is part from my another script used to build my own projects for macOS.
+# I was to lazy to rename/remove variables :), so that in slightly different style.
+QT_ROOT="${depsdir}"
+APP_NAME="qBittorrent"
+SRC_PATH="$PWD"
+
+build_dir="$SRC_PATH/../build-qbt"
+rm -rf "$build_dir"
+mkdir "$build_dir"
+cd "$build_dir"
+
+$QT_ROOT/bin/qmake -config release -r "$SRC_PATH/qbittorrent.pro"
+make -j$(sysctl -n hw.ncpu)
+
+# deploy Qt' libraries for an app
+cd src
+mv qbittorrent.app "$APP_NAME.app"
+$QT_ROOT/bin/macdeployqt "$APP_NAME.app"
+
+# deploy Qt' translations
+tr_path="$PWD/$APP_NAME.app/Contents/Resources/translations"
+[[ -d "$tr_path" ]] || mkdir "$tr_path"
+pushd "$QT_ROOT/translations" > /dev/null
+langs=$(ls -1 qt_*.qm | grep -v help | sed 's/qt_\(.*\)\.qm/\1/g')
+for lang in $langs
+do
+  lang_files=$(ls -1 qt*_$lang.qm)
+  $QT_ROOT/bin/lconvert -o "$tr_path/qt_$lang.qm" $lang_files
+done
+popd > /dev/null
+
+# update generated qt.conf
+echo "Translations = Resources/translations" >> "$APP_NAME.app/Contents/Resources/qt.conf"
+
+# create .dmg file, there magic becomes :)
+codesign --deep --force --verify --verbose --sign "-" "$APP_NAME.app"
+out_file="$build_dir/../qbittorrent-${qbt_branch}-macosx.dmg"
+if [[ $(which dmgbuild) ]]
+then
+  # use 'dmgbuild' utility: https://pypi.org/project/dmgbuild/
+  curl -O -J -L -s "https://www.dropbox.com/s/q315bjd96umlxm0/settings.py?dl=1"
+  dmgbuild -s "settings.py" -D app="$APP_NAME.app" "$APP_NAME" "$out_file"
+else
+  # use 'hdiutil' available on each macOS
+  hdiutil create -srcfolder "$APP_NAME.app" -nospotlight -layout NONE -fs HFS+ "$APP_NAME.dmg"
+  # this is very strange, but much better compression is achieved only after image conversion ...
+  hdiutil convert "$APP_NAME.dmg" -format UDBZ -o "$out_file"
+fi
+
+# move created .dmg file to user's Downloads directory, it is writable everywhere
+mv "$out_file" "$HOME/Downloads/"
+
 # cleanup
 cd "${workdir}/.."
 rm -rf "${workdir}"
