@@ -137,7 +137,7 @@ TransferListModel::TransferListModel(QObject *parent)
         addTorrent(torrent);
 
     // Listen for torrent changes
-    connect(Session::instance(), &Session::torrentAdded, this, &TransferListModel::addTorrent);
+    connect(Session::instance(), &Session::torrentLoaded, this, &TransferListModel::addTorrent);
     connect(Session::instance(), &Session::torrentAboutToBeRemoved, this, &TransferListModel::handleTorrentAboutToBeRemoved);
     connect(Session::instance(), &Session::torrentsUpdated, this, &TransferListModel::handleTorrentsUpdated);
 
@@ -166,7 +166,7 @@ QVariant TransferListModel::headerData(int section, Qt::Orientation orientation,
             case TR_QUEUE_POSITION: return QChar('#');
             case TR_NAME: return tr("Name", "i.e: torrent name");
             case TR_SIZE: return tr("Size", "i.e: torrent size");
-            case TR_PROGRESS: return tr("Done", "% Done");
+            case TR_PROGRESS: return tr("Progress", "% Done");
             case TR_STATUS: return tr("Status", "Torrent status (e.g. downloading, seeding, paused)");
             case TR_SEEDS: return tr("Seeds", "i.e. full sources (often untranslated)");
             case TR_PEERS: return tr("Peers", "i.e. partial sources (often untranslated)");
@@ -239,19 +239,19 @@ QString TransferListModel::displayValue(const BitTorrent::TorrentHandle *torrent
 
     const auto availabilityString = [hideValues](const qreal value) -> QString
     {
-        return ((value <= 0) && hideValues)
+        return (hideValues && (value <= 0))
                 ? QString {} : Utils::String::fromDouble(value, 3);
     };
 
     const auto unitString = [hideValues](const qint64 value, const bool isSpeedUnit = false) -> QString
     {
-        return ((value == 0) && hideValues)
+        return (hideValues && (value == 0))
                 ? QString {} : Utils::Misc::friendlyUnit(value, isSpeedUnit);
     };
 
     const auto limitString = [hideValues](const qint64 value) -> QString
     {
-        if ((value == 0) && hideValues)
+        if (hideValues && (value == 0))
             return {};
 
         return (value > 0)
@@ -261,14 +261,14 @@ QString TransferListModel::displayValue(const BitTorrent::TorrentHandle *torrent
 
     const auto amountString = [hideValues](const qint64 value, const qint64 total) -> QString
     {
-        return ((value == 0) && (total == 0) && hideValues)
+        return (hideValues && (value == 0) && (total == 0))
                 ? QString {}
                 : QString::number(value) + " (" + QString::number(total) + ')';
     };
 
     const auto ratioString = [hideValues](const qreal value) -> QString
     {
-        if ((value <= 0) && hideValues)
+        if (hideValues && (value <= 0))
             return {};
 
          return ((static_cast<int>(value) == -1) || (value > BitTorrent::TorrentHandle::MAX_RATIO))

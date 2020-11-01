@@ -254,7 +254,7 @@ void AppController::preferencesAction()
     data["dyndns_domain"] = pref->getDynDomainName();
 
     // RSS settings
-    data["rss_refresh_interval"] = static_cast<double>(RSS::Session::instance()->refreshInterval());
+    data["rss_refresh_interval"] = RSS::Session::instance()->refreshInterval();
     data["rss_max_articles_per_feed"] = RSS::Session::instance()->maxArticlesPerFeed();
     data["rss_processing_enabled"] = RSS::Session::instance()->isProcessingEnabled();
     data["rss_auto_downloading_enabled"] = RSS::AutoDownloader::instance()->isProcessingEnabled();
@@ -268,7 +268,7 @@ void AppController::preferencesAction()
     // Current network interface address
     data["current_interface_address"] = BitTorrent::Session::instance()->networkInterfaceAddress();
     // Save resume data interval
-    data["save_resume_data_interval"] = static_cast<double>(session->saveResumeDataInterval());
+    data["save_resume_data_interval"] = session->saveResumeDataInterval();
     // Recheck completed torrents
     data["recheck_completed_torrents"] = pref->recheckTorrentsOnCompletion();
     // Resolve peer countries
@@ -277,6 +277,8 @@ void AppController::preferencesAction()
     // libtorrent preferences
     // Async IO threads
     data["async_io_threads"] = session->asyncIOThreads();
+    // Hashing threads
+    data["hashing_threads"] = session->hashingThreads();
     // File pool size
     data["file_pool_size"] = session->filePoolSize();
     // Checking memory usage
@@ -309,6 +311,8 @@ void AppController::preferencesAction()
     data["enable_multi_connections_from_same_ip"] = session->multiConnectionsPerIpEnabled();
     // Validate HTTPS tracker certificate
     data["validate_https_tracker_certificate"] = session->validateHTTPSTrackerCertificate();
+    // Disallow connection to peers on privileged ports
+    data["block_peers_on_privileged_ports"] = session->blockPeersOnPrivilegedPorts();
     // Embedded tracker
     data["enable_embedded_tracker"] = session->isTrackerEnabled();
     data["embedded_tracker_port"] = pref->getTrackerPort();
@@ -320,8 +324,12 @@ void AppController::preferencesAction()
     data["announce_to_all_trackers"] = session->announceToAllTrackers();
     data["announce_to_all_tiers"] = session->announceToAllTiers();
     data["announce_ip"] = session->announceIP();
-    // Stop tracker timeout
+    data["max_concurrent_http_announces"] = session->maxConcurrentHTTPAnnounces();
     data["stop_tracker_timeout"] = session->stopTrackerTimeout();
+    // Peer Turnover
+    data["peer_turnover"] = session->peerTurnover();
+    data["peer_turnover_cutoff"] = session->peerTurnoverCutoff();
+    data["peer_turnover_interval"] = session->peerTurnoverInterval();
 
     setResult(data);
 }
@@ -562,8 +570,10 @@ void AppController::setPreferencesAction()
     if (hasKey("max_ratio_act"))
         session->setMaxRatioAction(static_cast<MaxRatioAction>(it.value().toInt()));
     // Add trackers
-    session->setAddTrackersEnabled(m["add_trackers_enabled"].toBool());
-    session->setAdditionalTrackers(m["add_trackers"].toString());
+    if (hasKey("add_trackers_enabled"))
+        session->setAddTrackersEnabled(it.value().toBool());
+    if (hasKey("add_trackers"))
+        session->setAdditionalTrackers(it.value().toString());
 
     // Web UI
     // Language
@@ -648,7 +658,7 @@ void AppController::setPreferencesAction()
         pref->setDynDomainName(it.value().toString());
 
     if (hasKey("rss_refresh_interval"))
-        RSS::Session::instance()->setRefreshInterval(it.value().toUInt());
+        RSS::Session::instance()->setRefreshInterval(it.value().toInt());
     if (hasKey("rss_max_articles_per_feed"))
         RSS::Session::instance()->setMaxArticlesPerFeed(it.value().toInt());
     if (hasKey("rss_processing_enabled"))
@@ -695,6 +705,9 @@ void AppController::setPreferencesAction()
     // Async IO threads
     if (hasKey("async_io_threads"))
         session->setAsyncIOThreads(it.value().toInt());
+    // Hashing threads
+    if (hasKey("hashing_threads"))
+        session->setHashingThreads(it.value().toInt());
     // File pool size
     if (hasKey("file_pool_size"))
         session->setFilePoolSize(it.value().toInt());
@@ -745,6 +758,9 @@ void AppController::setPreferencesAction()
     // Validate HTTPS tracker certificate
     if (hasKey("validate_https_tracker_certificate"))
         session->setValidateHTTPSTrackerCertificate(it.value().toBool());
+    // Disallow connection to peers on privileged ports
+    if (hasKey("block_peers_on_privileged_ports"))
+        session->setBlockPeersOnPrivilegedPorts(it.value().toBool());
     // Embedded tracker
     if (hasKey("embedded_tracker_port"))
         pref->setTrackerPort(it.value().toInt());
@@ -765,9 +781,17 @@ void AppController::setPreferencesAction()
         const QHostAddress announceAddr {it.value().toString().trimmed()};
         session->setAnnounceIP(announceAddr.isNull() ? QString {} : announceAddr.toString());
     }
-    // Stop tracker timeout
+    if (hasKey("max_concurrent_http_announces"))
+        session->setMaxConcurrentHTTPAnnounces(it.value().toInt());
     if (hasKey("stop_tracker_timeout"))
         session->setStopTrackerTimeout(it.value().toInt());
+    // Peer Turnover
+    if (hasKey("peer_turnover"))
+        session->setPeerTurnover(it.value().toInt());
+    if (hasKey("peer_turnover_cutoff"))
+        session->setPeerTurnoverCutoff(it.value().toInt());
+    if (hasKey("peer_turnover_interval"))
+        session->setPeerTurnoverInterval(it.value().toInt());
 
     // Save preferences
     pref->apply();

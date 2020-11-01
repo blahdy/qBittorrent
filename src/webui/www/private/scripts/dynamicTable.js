@@ -1305,9 +1305,9 @@ window.qBittorrent.DynamicTable = (function() {
                         return false;
                     break;
                 default:
-                    const tracker = trackerList.get(trackerHashInt)
+                    const tracker = trackerList.get(trackerHashInt);
                     if (tracker && !tracker.torrents.includes(row['full_data'].rowId))
-                        return false
+                        return false;
                     break;
             }
 
@@ -1765,7 +1765,7 @@ window.qBittorrent.DynamicTable = (function() {
                 }
                 else {
                     const treeImg = new Element('img', {
-                        src: '../images/L.gif',
+                        src: 'images/L.gif',
                         styles: {
                             'margin-bottom': -2
                         }
@@ -2062,9 +2062,9 @@ window.qBittorrent.DynamicTable = (function() {
             }
             row['data'] = {};
             tds[0].style.overflow = 'visible';
-            let indentaion = row.full_data.indentaion;
-            tds[0].style.paddingLeft = (indentaion * 32 + 4) + 'px';
-            tds[1].style.paddingLeft = (indentaion * 32 + 4) + 'px';
+            let indentation = row.full_data.indentation;
+            tds[0].style.paddingLeft = (indentation * 32 + 4) + 'px';
+            tds[1].style.paddingLeft = (indentation * 32 + 4) + 'px';
         },
         updateIcons: function() {
             // state_icon
@@ -2480,7 +2480,7 @@ window.qBittorrent.DynamicTable = (function() {
                 tr.removeClass('articleTableFeed');
                 tr.addClass('articleTableArticle');
             }
-            
+
             const tds = tr.getElements('td');
             for (let i = 0; i < this.columns.length; ++i) {
                 if (data.hasOwnProperty(this.columns[i].dataProperties[0]))
@@ -2489,7 +2489,7 @@ window.qBittorrent.DynamicTable = (function() {
             row['data'] = {};
         }
     });
-    
+
 
     return exports();
 })();
