@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2020  Prince Gupta <jagannatharjun11@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,47 +26,48 @@
  * exception statement from your version.
  */
 
-#include "searchlistdelegate.h"
+#include "progressbardelegate.h"
 
+#include <QApplication>
 #include <QModelIndex>
 #include <QPainter>
 #include <QStyleOptionViewItem>
 
-#include "base/utils/misc.h"
-#include "searchsortmodel.h"
+#if (defined(Q_OS_WIN) || defined(Q_OS_MACOS))
+#include <QProxyStyle>
+#endif
 
-SearchListDelegate::SearchListDelegate(QObject *parent)
-    : QItemDelegate(parent)
+ProgressBarDelegate::ProgressBarDelegate(const int progressColumn, const int dataRole, QObject *parent)
+    : QStyledItemDelegate {parent}
+    , m_progressColumn {progressColumn}
+    , m_dataRole {dataRole}
 {
+#if (defined(Q_OS_WIN) || defined(Q_OS_MACOS))
+    m_dummyProgressBar.setStyle(new QProxyStyle {"fusion"});
+#endif
 }
 
-void SearchListDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void ProgressBarDelegate::initProgressStyleOption(QStyleOptionProgressBar &option, const QModelIndex &index) const
 {
+    option.text = index.data().toString();
+    option.progress = static_cast<int>(index.data(m_dataRole).toReal());
+    option.maximum = 100;
+    option.minimum = 0;
+    option.state |= (QStyle::State_Enabled | QStyle::State_Horizontal);
+    option.textVisible = true;
+}
+
+void ProgressBarDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    if (index.column() != m_progressColumn)
+        return QStyledItemDelegate::paint(painter, option, index);
+
+    QStyleOptionProgressBar newopt;
+    newopt.initFrom(&m_dummyProgressBar);
+    newopt.rect = option.rect;
+    initProgressStyleOption(newopt, index);
+
     painter->save();
-
-    QStyleOptionViewItem opt = QItemDelegate::setOptions(index, option);
-    QItemDelegate::drawBackground(painter, opt, index);
-
-    switch (index.column()) {
-    case SearchSortModel::SIZE:
-        opt.displayAlignment = Qt::AlignRight | Qt::AlignVCenter;
-        QItemDelegate::drawDisplay(painter, opt, option.rect, Utils::Misc::friendlyUnit(index.data().toLongLong()));
-        break;
-    case SearchSortModel::SEEDS:
-    case SearchSortModel::LEECHES:
-        opt.displayAlignment = Qt::AlignRight | Qt::AlignVCenter;
-        QItemDelegate::drawDisplay(painter, opt, option.rect
-            , (index.data().toLongLong() >= 0) ? index.data().toString() : tr("Unknown"));
-        break;
-    default:
-        QItemDelegate::paint(painter, option, index);
-    }
-
+    m_dummyProgressBar.style()->drawControl(QStyle::CE_ProgressBar, &newopt, painter, &m_dummyProgressBar);
     painter->restore();
-}
-
-QWidget *SearchListDelegate::createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const
-{
-    // No editor here
-    return nullptr;
 }

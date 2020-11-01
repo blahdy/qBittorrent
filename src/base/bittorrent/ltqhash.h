@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2020  Vladimir Golovnev <glassez@yandex.ru>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,42 +26,22 @@
  * exception statement from your version.
  */
 
-#ifndef PEERLISTDELEGATE_H
-#define PEERLISTDELEGATE_H
+#pragma once
 
-#include <QItemDelegate>
+#include <functional>
 
-class PeerListDelegate : public QItemDelegate
+#include <libtorrent/units.hpp>
+
+#include <QHash>
+
+namespace libtorrent
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(PeerListDelegate)
-
-public:
-    enum PeerListColumns
+    namespace aux
     {
-        COUNTRY,
-        IP,
-        PORT,
-        CONNECTION,
-        FLAGS,
-        CLIENT,
-        PROGRESS,
-        DOWN_SPEED,
-        UP_SPEED,
-        TOT_DOWN,
-        TOT_UP,
-        RELEVANCE,
-        DOWNLOADING_PIECE,
-        IP_HIDDEN,
-
-        COL_COUNT
-    };
-
-    explicit PeerListDelegate(QObject *parent);
-
-private:
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-    QWidget *createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const override;
-};
-
-#endif // PEERLISTDELEGATE_H
+        template <typename T, typename Tag>
+        uint qHash(const strong_typedef<T, Tag> &key, const uint seed)
+        {
+            return ::qHash((std::hash<strong_typedef<T, Tag>> {})(key), seed);
+        }
+    }
+}

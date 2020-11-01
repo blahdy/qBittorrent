@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2020  Prince Gupta <jagannatharjun11@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,20 +26,26 @@
  * exception statement from your version.
  */
 
-#ifndef SEARCHLISTDELEGATE_H
-#define SEARCHLISTDELEGATE_H
+#pragma once
 
-#include <QItemDelegate>
+#include <QProgressBar>
+#include <QStyledItemDelegate>
 
-class SearchListDelegate final : public QItemDelegate
+class QStyleOptionProgressBar;
+
+class ProgressBarDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT
-
 public:
-    explicit SearchListDelegate(QObject *parent);
+    ProgressBarDelegate(int progressColumn, int dataRole, QObject *parent = nullptr);
 
+protected:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-    QWidget *createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const override;
-};
+    virtual void initProgressStyleOption(QStyleOptionProgressBar &option, const QModelIndex &index) const;
 
-#endif // SEARCHLISTDELEGATE_H
+private:
+    const int m_progressColumn;
+    const int m_dataRole;
+
+    // for painting progressbar with stylesheet option, a dummy progress bar is required
+    QProgressBar m_dummyProgressBar;
+};
