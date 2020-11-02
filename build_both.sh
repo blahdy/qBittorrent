@@ -10,7 +10,7 @@ depsdir="${workdir%/}/ext"      # all dependencies will be placed here
 cd ${workdir}
 
 # download Qt from Git repository
-qt_branch=5.15                  # Qt version to use
+qt_branch=v5.15.1               # Qt version to use
 git clone https://code.qt.io/qt/qt5.git
 cd qt5
 git checkout ${qt_branch}
@@ -44,7 +44,7 @@ make install
 cd ${workdir}
 
 # download and build Boost
-boost_ver=1.73.0                # Boost version to use
+boost_ver=1.74.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
 curl -L https://dl.bintray.com/boostorg/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
@@ -56,20 +56,17 @@ cd boost_${boost_ver_u}
 
 cd ..
 
-# download and build libtorrent
-# I decided to build libtorrent with CMake, because on macOS it can't be built using autotools
-# and I'm not familiar with Boost.Build and couldn't get it work "out of the box".
-# not every developer has CMake installed, so download (but not install!) it if required.
-if [[ -f "/Applications/CMake.app/Contents/bin/cmake" ]]
-then
-  cmake="/Applications/CMake.app/Contents/bin/cmake"
-else
-  cmake_ver=3.18.0
-  curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
-  cmakedir=$(ls | grep cmake)
-  cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
-fi
+# download CMake and Ninja
+cmake_ver=3.18.4                # CMake version to use
+curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
+cmakedir=$(ls | grep cmake)
+cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
 
+ninja_ver=1.10.1                # Ninja version to use
+curl -O -J -L https://github.com/ninja-build/ninja/releases/download/v${ninja_ver}/ninja-mac.zip
+unzip -d "${depsdir}/bin" ninja-mac.zip
+
+# download and build libtorrent
 lt_branch=RC_1_2                # libtorrent version to use, use latest development version from 1.2.x versions
 
 curl -L https://github.com/arvidn/libtorrent/archive/${lt_branch}.tar.gz | tar xz
@@ -80,12 +77,11 @@ cd libtorrent-${lt_branch}
 # this fix is just "quick fix" or workaround, so merge request was not submitted to the developers.
 curl -L -s "https://www.dropbox.com/s/ym7fegg4f3hwwnt/lt-static-link-warning-fix.patch?dl=1" | patch -p1
 
-mkdir build && cd build
-${cmake} -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -Ddeprecated-functions=OFF -DCMAKE_INSTALL_PREFIX=${depsdir} ..
-make VERBOSE=1 -j$(sysctl -n hw.ncpu)
-make install
+${cmake} -B build -G Ninja -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -Ddeprecated-functions=OFF -DCMAKE_INSTALL_PREFIX=${depsdir}
+${cmake} --build build
+${cmake} --install build
 
-cd ../..
+cd ..
 
 # download and build qBittorrent - some magic comes here :)
 # download the sources
@@ -95,41 +91,30 @@ curl -L https://github.com/blahdy/qBittorrent/archive/{$qbt_branch}.tar.gz | tar
 
 cd qBittorrent-${qbt_branch}
 
-# as so as it is impossible (or pretty hard) to get work autotools build system on macOS,
-# there are only 2 options what to use to build qBittorrent: CMake and qmake.
-# I don't like CMake in general, moreover it is pretty hard to use with Qt, especially from custom path.
-# thereby I decided to use "Qt's native build system" - qmake. it is maybe not so convenient in case of
-# qBittorrent build configuration, but developers envisaged it and created special file for "user configuration".
-# so, download my recommended project configuration (conf.pri)
-curl -O -J -L -s "https://www.dropbox.com/s/apfv9ofhhftderj/conf.pri?dl=1"
-# Note: exactly the same config can be used to build qBittorrent in QtCreator.
-
 # I don't like the way how official qBittorrent app is packaged for macOS, so I do it in my own way.
 # I didn't suggest any patches used there to qBittorrent developers/maintainers, because I'm not Apple
 # developer and strictly don't know the "true" methods, and these changes were made in my own opinion.
 # patches are completely optional.
 # first patch disables Qt translations deployment, I'll do it later.
-curl -L -s "https://www.dropbox.com/s/d6sdrvz2zpjnywn/qbt-no-predef-qt-stuff.patch?dl=1" | patch -p1
+curl -L -s "https://www.dropbox.com/s/pnri68xsdhu5rej/qbt-no-predef-qt-stuff-cmake.patch?dl=1" | patch -p1
 
 # better HiDPI support
 curl -L -s "https://www.dropbox.com/s/2crekp814e5m2vj/hidpi-hacks-new.patch?dl=1" | patch -p1
+
+# cmake doesn't understand qmake' placeholders in Info.plist, so change them
+perl -pi -e "s/\@EXECUTABLE\@/\\$\\{MACOSX_BUNDLE_EXECUTABLE_NAME\\}/g" dist/mac/Info.plist
+perl -pi -e "s/\\$\\{MACOSX_DEPLOYMENT_TARGET\\}/${min_macos_ver}/g" dist/mac/Info.plist
+
+${cmake} -B build -G Ninja -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release
+${cmake} --build build
 
 # next part of this script is part from my another script used to build my own projects for macOS.
 # I was to lazy to rename/remove variables :), so that in slightly different style.
 QT_ROOT="${depsdir}"
 APP_NAME="qBittorrent"
-SRC_PATH="$PWD"
-
-build_dir="$SRC_PATH/../build-qbt"
-rm -rf "$build_dir"
-mkdir "$build_dir"
-cd "$build_dir"
-
-$QT_ROOT/bin/qmake -config release -r "$SRC_PATH/qbittorrent.pro"
-make -j$(sysctl -n hw.ncpu)
 
 # deploy Qt' libraries for an app
-cd src
+cd build
 mv qbittorrent.app "$APP_NAME.app"
 $QT_ROOT/bin/macdeployqt "$APP_NAME.app"
 
@@ -150,7 +135,7 @@ echo "Translations = Resources/translations" >> "$APP_NAME.app/Contents/Resource
 
 # create .dmg file, there magic becomes :)
 codesign --deep --force --verify --verbose --sign "-" "$APP_NAME.app"
-out_file="$build_dir/../qbittorrent-${qbt_branch}-macosx.dmg"
+out_file="$PWD/qbittorrent-${qbt_branch}-macosx.dmg"
 if [[ $(which dmgbuild) ]]
 then
   # use 'dmgbuild' utility: https://pypi.org/project/dmgbuild/
@@ -167,7 +152,6 @@ fi
 mv "$out_file" "$HOME/Downloads/"
 
 cd ${workdir}
-
 # download and build qBittorrent - some magic comes here :)
 # download the sources
 qbt_branch=masters               # qBittorrent version to use, use latest development version
@@ -176,41 +160,30 @@ curl -L https://github.com/blahdy/qBittorrent/archive/{$qbt_branch}.tar.gz | tar
 
 cd qBittorrent-${qbt_branch}
 
-# as so as it is impossible (or pretty hard) to get work autotools build system on macOS,
-# there are only 2 options what to use to build qBittorrent: CMake and qmake.
-# I don't like CMake in general, moreover it is pretty hard to use with Qt, especially from custom path.
-# thereby I decided to use "Qt's native build system" - qmake. it is maybe not so convenient in case of
-# qBittorrent build configuration, but developers envisaged it and created special file for "user configuration".
-# so, download my recommended project configuration (conf.pri)
-curl -O -J -L -s "https://www.dropbox.com/s/apfv9ofhhftderj/conf.pri?dl=1"
-# Note: exactly the same config can be used to build qBittorrent in QtCreator.
-
 # I don't like the way how official qBittorrent app is packaged for macOS, so I do it in my own way.
 # I didn't suggest any patches used there to qBittorrent developers/maintainers, because I'm not Apple
 # developer and strictly don't know the "true" methods, and these changes were made in my own opinion.
 # patches are completely optional.
 # first patch disables Qt translations deployment, I'll do it later.
-curl -L -s "https://www.dropbox.com/s/d6sdrvz2zpjnywn/qbt-no-predef-qt-stuff.patch?dl=1" | patch -p1
+curl -L -s "https://www.dropbox.com/s/pnri68xsdhu5rej/qbt-no-predef-qt-stuff-cmake.patch?dl=1" | patch -p1
 
 # better HiDPI support
 curl -L -s "https://www.dropbox.com/s/2crekp814e5m2vj/hidpi-hacks-new.patch?dl=1" | patch -p1
+
+# cmake doesn't understand qmake' placeholders in Info.plist, so change them
+perl -pi -e "s/\@EXECUTABLE\@/\\$\\{MACOSX_BUNDLE_EXECUTABLE_NAME\\}/g" dist/mac/Info.plist
+perl -pi -e "s/\\$\\{MACOSX_DEPLOYMENT_TARGET\\}/${min_macos_ver}/g" dist/mac/Info.plist
+
+${cmake} -B build -G Ninja -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=14 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release
+${cmake} --build build
 
 # next part of this script is part from my another script used to build my own projects for macOS.
 # I was to lazy to rename/remove variables :), so that in slightly different style.
 QT_ROOT="${depsdir}"
 APP_NAME="qBittorrent"
-SRC_PATH="$PWD"
-
-build_dir="$SRC_PATH/../build-qbt"
-rm -rf "$build_dir"
-mkdir "$build_dir"
-cd "$build_dir"
-
-$QT_ROOT/bin/qmake -config release -r "$SRC_PATH/qbittorrent.pro"
-make -j$(sysctl -n hw.ncpu)
 
 # deploy Qt' libraries for an app
-cd src
+cd build
 mv qbittorrent.app "$APP_NAME.app"
 $QT_ROOT/bin/macdeployqt "$APP_NAME.app"
 
@@ -231,7 +204,7 @@ echo "Translations = Resources/translations" >> "$APP_NAME.app/Contents/Resource
 
 # create .dmg file, there magic becomes :)
 codesign --deep --force --verify --verbose --sign "-" "$APP_NAME.app"
-out_file="$build_dir/../qbittorrent-${qbt_branch}-macosx.dmg"
+out_file="$PWD/qbittorrent-${qbt_branch}-macosx.dmg"
 if [[ $(which dmgbuild) ]]
 then
   # use 'dmgbuild' utility: https://pypi.org/project/dmgbuild/
