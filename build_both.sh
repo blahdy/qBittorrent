@@ -10,7 +10,7 @@ depsdir="${workdir%/}/ext"      # all dependencies will be placed here
 cd ${workdir}
 
 # download Qt from Git repository
-qt_branch=v5.15.1               # Qt version to use
+qt_branch=v5.15.2               # Qt version to use
 git clone https://code.qt.io/qt/qt5.git
 cd qt5
 git checkout ${qt_branch}
@@ -57,12 +57,12 @@ cd boost_${boost_ver_u}
 cd ..
 
 # download CMake and Ninja
-cmake_ver=3.18.4                # CMake version to use
+cmake_ver=3.19.1                # CMake version to use
 curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
 cmakedir=$(ls | grep cmake)
 cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
 
-ninja_ver=1.10.1                # Ninja version to use
+ninja_ver=1.10.2                # Ninja version to use
 curl -O -J -L https://github.com/ninja-build/ninja/releases/download/v${ninja_ver}/ninja-mac.zip
 unzip -d "${depsdir}/bin" ninja-mac.zip
 
