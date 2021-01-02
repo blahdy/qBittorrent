@@ -44,7 +44,7 @@ make install
 cd ${workdir}
 
 # download and build Boost
-boost_ver=1.74.0                # Boost version to use
+boost_ver=1.75.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
 curl -L https://dl.bintray.com/boostorg/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
@@ -57,8 +57,8 @@ cd boost_${boost_ver_u}
 cd ..
 
 # download CMake and Ninja
-cmake_ver=3.19.1                # CMake version to use
-curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
+cmake_ver=3.19.2                # CMake version to use
+curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
 cmakedir=$(ls | grep cmake)
 cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
 
@@ -97,9 +97,6 @@ cd qBittorrent-${qbt_branch}
 # patches are completely optional.
 # first patch disables Qt translations deployment, I'll do it later.
 curl -L -s "https://www.dropbox.com/s/pnri68xsdhu5rej/qbt-no-predef-qt-stuff-cmake.patch?dl=1" | patch -p1
-
-# better HiDPI support
-curl -L -s "https://www.dropbox.com/s/2crekp814e5m2vj/hidpi-hacks-new.patch?dl=1" | patch -p1
 
 # cmake doesn't understand qmake' placeholders in Info.plist, so change them
 perl -pi -e "s/\@EXECUTABLE\@/\\$\\{MACOSX_BUNDLE_EXECUTABLE_NAME\\}/g" dist/mac/Info.plist
@@ -152,6 +149,7 @@ fi
 mv "$out_file" "$HOME/Downloads/"
 
 cd ${workdir}
+
 # download and build qBittorrent - some magic comes here :)
 # download the sources
 qbt_branch=masters               # qBittorrent version to use, use latest development version
