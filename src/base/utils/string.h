@@ -27,16 +27,15 @@
  * exception statement from your version.
  */
 
-#ifndef UTILS_STRING_H
-#define UTILS_STRING_H
+#pragma once
 
 #include <QChar>
-#include <QVector>
+#include <QMetaEnum>
+#include <QString>
+#include <Qt>
+#include <QtContainerFwd>
 
-class QString;
 class QStringRef;
-
-class TriStateBool;
 
 namespace Utils
 {
@@ -68,10 +67,29 @@ namespace Utils
         }
 
         bool parseBool(const QString &string, bool defaultValue);
-        TriStateBool parseTriStateBool(const QString &string);
 
         QString join(const QVector<QStringRef> &strings, const QString &separator);
+
+        template <typename T, typename std::enable_if_t<std::is_enum_v<T>, int> = 0>
+        QString fromEnum(const T &value)
+        {
+            static_assert(std::is_same_v<int, typename std::underlying_type_t<T>>,
+                          "Enumeration underlying type has to be int.");
+
+            const auto metaEnum = QMetaEnum::fromType<T>();
+            return QString::fromLatin1(metaEnum.valueToKey(static_cast<int>(value)));
+        }
+
+        template <typename T, typename std::enable_if_t<std::is_enum_v<T>, int> = 0>
+        T toEnum(const QString &serializedValue, const T &defaultValue)
+        {
+            static_assert(std::is_same_v<int, typename std::underlying_type_t<T>>,
+                          "Enumeration underlying type has to be int.");
+
+            const auto metaEnum = QMetaEnum::fromType<T>();
+            bool ok = false;
+            const T value = static_cast<T>(metaEnum.keyToValue(serializedValue.toLatin1().constData(), &ok));
+            return (ok ? value : defaultValue);
+        }
     }
 }
-
-#endif // UTILS_STRING_H

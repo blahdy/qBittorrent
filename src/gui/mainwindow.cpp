@@ -172,10 +172,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_ui->actionOpen->setIcon(UIThemeManager::instance()->getIcon("list-add"));
     m_ui->actionDownloadFromURL->setIcon(UIThemeManager::instance()->getIcon("insert-link"));
-    m_ui->actionSetUploadLimit->setIcon(UIThemeManager::instance()->getIcon("kt-set-max-upload-speed"));
-    m_ui->actionSetDownloadLimit->setIcon(UIThemeManager::instance()->getIcon("kt-set-max-download-speed"));
-    m_ui->actionSetGlobalUploadLimit->setIcon(UIThemeManager::instance()->getIcon("kt-set-max-upload-speed"));
-    m_ui->actionSetGlobalDownloadLimit->setIcon(UIThemeManager::instance()->getIcon("kt-set-max-download-speed"));
+    m_ui->actionSetGlobalSpeedLimits->setIcon(UIThemeManager::instance()->getIcon("speedometer"));
     m_ui->actionCreateTorrent->setIcon(UIThemeManager::instance()->getIcon("document-edit"));
     m_ui->actionAbout->setIcon(UIThemeManager::instance()->getIcon("help-about"));
     m_ui->actionStatistics->setIcon(UIThemeManager::instance()->getIcon("view-statistics"));
@@ -211,8 +208,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::downloadFromUrlFailed, this, &MainWindow::handleDownloadFromUrlFailure);
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::speedLimitModeChanged, this, &MainWindow::updateAltSpeedsBtn);
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::recursiveTorrentDownloadPossible, this, &MainWindow::askRecursiveTorrentDownloadConfirmation);
-    connect(BitTorrent::Session::instance(), &BitTorrent::Session::torrentStorageMoveFinished, this, &MainWindow::moveTorrentFinished);
-    connect(BitTorrent::Session::instance(), &BitTorrent::Session::torrentStorageMoveFailed, this, &MainWindow::moveTorrentFailed);
 
     qDebug("create tabWidget");
     m_tabs = new HidableTabWidget(this);
@@ -264,11 +259,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::trackerlessStateChanged, m_transferListFiltersWidget, &TransferListFiltersWidget::changeTrackerless);
 
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::trackerSuccess
-        , m_transferListFiltersWidget, qOverload<BitTorrent::TorrentHandle *const, const QString &>(&TransferListFiltersWidget::trackerSuccess));
+        , m_transferListFiltersWidget, qOverload<const BitTorrent::TorrentHandle *, const QString &>(&TransferListFiltersWidget::trackerSuccess));
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::trackerError
-        , m_transferListFiltersWidget, qOverload<BitTorrent::TorrentHandle *const, const QString &>(&TransferListFiltersWidget::trackerError));
+        , m_transferListFiltersWidget, qOverload<const BitTorrent::TorrentHandle *, const QString &>(&TransferListFiltersWidget::trackerError));
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::trackerWarning
-        , m_transferListFiltersWidget, qOverload<BitTorrent::TorrentHandle *const, const QString &>(&TransferListFiltersWidget::trackerWarning));
+        , m_transferListFiltersWidget, qOverload<const BitTorrent::TorrentHandle *, const QString &>(&TransferListFiltersWidget::trackerWarning));
 
 #ifdef Q_OS_MACOS
     // Increase top spacing to avoid tab overlapping
@@ -874,16 +869,6 @@ void MainWindow::finishedTorrent(BitTorrent::TorrentHandle *const torrent) const
     showNotificationBaloon(tr("Download completion"), tr("'%1' has finished downloading.", "e.g: xxx.avi has finished downloading.").arg(torrent->name()));
 }
 
-void MainWindow::moveTorrentFinished(BitTorrent::TorrentHandle *const torrent, const QString &newPath) const
-{
-    showNotificationBaloon(tr("Torrent moving finished"), tr("'%1' has finished moving files to '%2'.").arg(torrent->name(), newPath));
-}
-
-void MainWindow::moveTorrentFailed(BitTorrent::TorrentHandle *const torrent, const QString &targetPath, const QString &error) const
-{
-    showNotificationBaloon(tr("Torrent moving failed"), tr("'%1' has failed moving files to '%2'. Reason: %3").arg(torrent->name(), targetPath, error));
-}
-
 // Notification when disk is full
 void MainWindow::fullDiskError(BitTorrent::TorrentHandle *const torrent, const QString &msg) const
 {
@@ -1008,36 +993,11 @@ void MainWindow::handleDownloadFromUrlFailure(const QString &url, const QString 
         , tr("Couldn't download file at URL '%1', reason: %2.").arg(url, reason));
 }
 
-void MainWindow::on_actionSetGlobalUploadLimit_triggered()
+void MainWindow::on_actionSetGlobalSpeedLimits_triggered()
 {
-    qDebug() << Q_FUNC_INFO;
-
-    BitTorrent::Session *const session = BitTorrent::Session::instance();
-    bool ok = false;
-    const long newLimit = SpeedLimitDialog::askSpeedLimit(
-        this, &ok, tr("Global Upload Speed Limit"), session->uploadSpeedLimit());
-
-    if (ok)
-    {
-        qDebug("Setting global upload rate limit to %.1fKb/s", newLimit / 1024.);
-        session->setUploadSpeedLimit(newLimit);
-    }
-}
-
-void MainWindow::on_actionSetGlobalDownloadLimit_triggered()
-{
-    qDebug() << Q_FUNC_INFO;
-
-    BitTorrent::Session *const session = BitTorrent::Session::instance();
-    bool ok = false;
-    const long newLimit = SpeedLimitDialog::askSpeedLimit(
-        this, &ok, tr("Global Download Speed Limit"), session->downloadSpeedLimit());
-
-    if (ok)
-    {
-        qDebug("Setting global download rate limit to %.1fKb/s", newLimit / 1024.);
-        session->setDownloadSpeedLimit(newLimit);
-    }
+    auto dialog = new SpeedLimitDialog {this};
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->open();
 }
 
 // Necessary if we want to close the window
@@ -1808,8 +1768,7 @@ QMenu *MainWindow::trayIconMenu()
     updateAltSpeedsBtn(isAltBWEnabled);
     m_ui->actionUseAlternativeSpeedLimits->setChecked(isAltBWEnabled);
     m_trayIconMenu->addAction(m_ui->actionUseAlternativeSpeedLimits);
-    m_trayIconMenu->addAction(m_ui->actionSetGlobalDownloadLimit);
-    m_trayIconMenu->addAction(m_ui->actionSetGlobalUploadLimit);
+    m_trayIconMenu->addAction(m_ui->actionSetGlobalSpeedLimits);
     m_trayIconMenu->addSeparator();
     m_trayIconMenu->addAction(m_ui->actionStartAll);
     m_trayIconMenu->addAction(m_ui->actionPauseAll);

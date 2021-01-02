@@ -35,13 +35,12 @@
 #include <QLocale>
 #include <QRegExp>
 #include <QtGlobal>
+#include <QVector>
 
 #if defined(Q_OS_MACOS) || defined(__MINGW32__)
 #define QBT_USES_QTHREADSTORAGE
 #include <QThreadStorage>
 #endif
-
-#include "base/tristatebool.h"
 
 namespace
 {
@@ -196,15 +195,6 @@ bool Utils::String::parseBool(const QString &string, const bool defaultValue)
     if (defaultValue)
         return (string.compare("false", Qt::CaseInsensitive) == 0) ? false : true;
     return (string.compare("true", Qt::CaseInsensitive) == 0) ? true : false;
-}
-
-TriStateBool Utils::String::parseTriStateBool(const QString &string)
-{
-    if (string.compare("true", Qt::CaseInsensitive) == 0)
-        return TriStateBool::True;
-    if (string.compare("false", Qt::CaseInsensitive) == 0)
-        return TriStateBool::False;
-    return TriStateBool::Undefined;
 }
 
 QString Utils::String::join(const QVector<QStringRef> &strings, const QString &separator)

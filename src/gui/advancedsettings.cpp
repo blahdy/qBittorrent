@@ -102,9 +102,7 @@ namespace
 #if (LIBTORRENT_VERSION_NUM < 20000)
         COALESCE_RW,
 #endif
-#if (LIBTORRENT_VERSION_NUM >= 10202)
         PIECE_EXTENT_AFFINITY,
-#endif
         SUGGEST_MODE,
         SEND_BUF_WATERMARK,
         SEND_BUF_LOW_WATERMARK,
@@ -113,10 +111,11 @@ namespace
         SOCKET_BACKLOG_SIZE,
         OUTGOING_PORT_MIN,
         OUTGOING_PORT_MAX,
-#if (LIBTORRENT_VERSION_NUM >= 10206)
         UPNP_LEASE_DURATION,
-#endif
         UTP_MIX_MODE,
+#ifdef HAS_IDN_SUPPORT
+        IDN_SUPPORT,
+#endif
         MULTI_CONNECTIONS_PER_IP,
 #ifdef HAS_HTTPS_TRACKER_VALIDATION
         VALIDATE_HTTPS_TRACKER_CERTIFICATE,
@@ -129,9 +128,7 @@ namespace
         ANNOUNCE_ALL_TRACKERS,
         ANNOUNCE_ALL_TIERS,
         ANNOUNCE_IP,
-#if (LIBTORRENT_VERSION_NUM >= 10207)
         MAX_CONCURRENT_HTTP_ANNOUNCES,
-#endif
         STOP_TRACKER_TIMEOUT,
         PEER_TURNOVER,
         PEER_TURNOVER_CUTOFF,
@@ -210,10 +207,8 @@ void AdvancedSettings::saveAdvancedSettings()
     // Coalesce reads & writes
     session->setCoalesceReadWriteEnabled(m_checkBoxCoalesceRW.isChecked());
 #endif
-#if (LIBTORRENT_VERSION_NUM >= 10202)
     // Piece extent affinity
     session->setPieceExtentAffinity(m_checkBoxPieceExtentAffinity.isChecked());
-#endif
     // Suggest mode
     session->setSuggestMode(m_checkBoxSuggestMode.isChecked());
     // Send buffer watermark
@@ -227,12 +222,14 @@ void AdvancedSettings::saveAdvancedSettings()
     // Outgoing ports
     session->setOutgoingPortsMin(m_spinBoxOutgoingPortsMin.value());
     session->setOutgoingPortsMax(m_spinBoxOutgoingPortsMax.value());
-#if (LIBTORRENT_VERSION_NUM >= 10206)
     // UPnP lease duration
     session->setUPnPLeaseDuration(m_spinBoxUPnPLeaseDuration.value());
-#endif
     // uTP-TCP mixed mode
     session->setUtpMixedMode(static_cast<BitTorrent::MixedModeAlgorithm>(m_comboBoxUtpMixedMode.currentIndex()));
+#ifdef HAS_IDN_SUPPORT
+    // Support internationalized domain name (IDN)
+    session->setIDNSupportEnabled(m_checkBoxIDNSupport.isChecked());
+#endif
     // multiple connections per IP
     session->setMultiConnectionsPerIpEnabled(m_checkBoxMultiConnectionsPerIp.isChecked());
 #ifdef HAS_HTTPS_TRACKER_VALIDATION
@@ -270,10 +267,8 @@ void AdvancedSettings::saveAdvancedSettings()
     // Construct a QHostAddress to filter malformed strings
     const QHostAddress addr(m_lineEditAnnounceIP.text().trimmed());
     session->setAnnounceIP(addr.toString());
-#if (LIBTORRENT_VERSION_NUM >= 10207)
     // Max concurrent HTTP announces
     session->setMaxConcurrentHTTPAnnounces(m_spinBoxMaxConcurrentHTTPAnnounces.value());
-#endif
     // Stop tracker timeout
     session->setStopTrackerTimeout(m_spinBoxStopTrackerTimeout.value());
     // Program notification
@@ -488,11 +483,9 @@ void AdvancedSettings::loadAdvancedSettings()
     addRow(COALESCE_RW, (tr("Coalesce reads & writes") + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#coalesce_reads", "(?)"))
             , &m_checkBoxCoalesceRW);
 #endif
-#if (LIBTORRENT_VERSION_NUM >= 10202)
     // Piece extent affinity
     m_checkBoxPieceExtentAffinity.setChecked(session->usePieceExtentAffinity());
     addRow(PIECE_EXTENT_AFFINITY, (tr("Use piece extent affinity") + ' ' + makeLink("https://libtorrent.org/single-page-ref.html#piece_extent_affinity", "(?)")), &m_checkBoxPieceExtentAffinity);
-#endif
     // Suggest mode
     m_checkBoxSuggestMode.setChecked(session->isSuggestModeEnabled());
     addRow(SUGGEST_MODE, (tr("Send upload piece suggestions") + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#suggest_mode", "(?)"))
@@ -544,7 +537,6 @@ void AdvancedSettings::loadAdvancedSettings()
     addRow(OUTGOING_PORT_MAX, (tr("Outgoing ports (Max) [0: Disabled]")
         + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#outgoing_port", "(?)"))
         , &m_spinBoxOutgoingPortsMax);
-#if (LIBTORRENT_VERSION_NUM >= 10206)
     // UPnP lease duration
     m_spinBoxUPnPLeaseDuration.setMinimum(0);
     m_spinBoxUPnPLeaseDuration.setMaximum(std::numeric_limits<int>::max());
@@ -552,13 +544,19 @@ void AdvancedSettings::loadAdvancedSettings()
     m_spinBoxUPnPLeaseDuration.setSuffix(tr(" s", " seconds"));
     addRow(UPNP_LEASE_DURATION, (tr("UPnP lease duration [0: Permanent lease]") + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#upnp_lease_duration", "(?)"))
         , &m_spinBoxUPnPLeaseDuration);
-#endif
     // uTP-TCP mixed mode
     m_comboBoxUtpMixedMode.addItems({tr("Prefer TCP"), tr("Peer proportional (throttles TCP)")});
     m_comboBoxUtpMixedMode.setCurrentIndex(static_cast<int>(session->utpMixedMode()));
     addRow(UTP_MIX_MODE, (tr("%1-TCP mixed mode algorithm", "uTP-TCP mixed mode algorithm").arg(C_UTP)
             + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#mixed_mode_algorithm", "(?)"))
             , &m_comboBoxUtpMixedMode);
+#ifdef HAS_IDN_SUPPORT
+    // Support internationalized domain name (IDN)
+    m_checkBoxIDNSupport.setChecked(session->isIDNSupportEnabled());
+    addRow(IDN_SUPPORT, (tr("Support internationalized domain name (IDN)")
+            + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#allow_idna", "(?)"))
+            , &m_checkBoxIDNSupport);
+#endif
     // multiple connections per IP
     m_checkBoxMultiConnectionsPerIp.setChecked(session->multiConnectionsPerIpEnabled());
     addRow(MULTI_CONNECTIONS_PER_IP, (tr("Allow multiple connections from the same IP address")
@@ -621,13 +619,11 @@ void AdvancedSettings::loadAdvancedSettings()
     addRow(ANNOUNCE_IP, (tr("IP Address to report to trackers (requires restart)")
         + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#announce_ip", "(?)"))
         , &m_lineEditAnnounceIP);
-#if (LIBTORRENT_VERSION_NUM >= 10207)
     // Max concurrent HTTP announces
     m_spinBoxMaxConcurrentHTTPAnnounces.setMaximum(std::numeric_limits<int>::max());
     m_spinBoxMaxConcurrentHTTPAnnounces.setValue(session->maxConcurrentHTTPAnnounces());
     addRow(MAX_CONCURRENT_HTTP_ANNOUNCES, (tr("Max concurrent HTTP announces") + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#max_concurrent_http_announces", "(?)"))
            , &m_spinBoxMaxConcurrentHTTPAnnounces);
-#endif
     // Stop tracker timeout
     m_spinBoxStopTrackerTimeout.setValue(session->stopTrackerTimeout());
     m_spinBoxStopTrackerTimeout.setSuffix(tr(" s", " seconds"));
@@ -719,12 +715,12 @@ void AdvancedSettings::addRow(const int row, const QString &text, T *widget)
     setCellWidget(row, PROPERTY, label);
     setCellWidget(row, VALUE, widget);
 
-    if (std::is_same<T, QCheckBox>::value)
-        connect(widget, SIGNAL(stateChanged(int)), this, SIGNAL(settingsChanged()));
-    else if (std::is_same<T, QSpinBox>::value)
-        connect(widget, SIGNAL(valueChanged(int)), this, SIGNAL(settingsChanged()));
-    else if (std::is_same<T, QComboBox>::value)
-        connect(widget, SIGNAL(currentIndexChanged(int)), this, SIGNAL(settingsChanged()));
-    else if (std::is_same<T, QLineEdit>::value)
-        connect(widget, SIGNAL(textChanged(QString)), this, SIGNAL(settingsChanged()));
+    if constexpr (std::is_same_v<T, QCheckBox>)
+        connect(widget, &QCheckBox::stateChanged, this, &AdvancedSettings::settingsChanged);
+    else if constexpr (std::is_same_v<T, QSpinBox>)
+        connect(widget, qOverload<int>(&QSpinBox::valueChanged), this, &AdvancedSettings::settingsChanged);
+    else if constexpr (std::is_same_v<T, QComboBox>)
+        connect(widget, qOverload<int>(&QComboBox::currentIndexChanged), this, &AdvancedSettings::settingsChanged);
+    else if constexpr (std::is_same_v<T, QLineEdit>)
+        connect(widget, &QLineEdit::textChanged, this, &AdvancedSettings::settingsChanged);
 }

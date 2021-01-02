@@ -1,7 +1,7 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2011  Christian Kandeler
- * Copyright (C) 2011  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2020  Vladimir Golovnev <glassez@yandex.ru>
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
@@ -26,40 +26,26 @@
  * exception statement from your version.
  */
 
-#ifndef UPDOWNRATIODIALOG_H
-#define UPDOWNRATIODIALOG_H
+#pragma once
 
-#include <QDialog>
+#include <QMetaEnum>
 
-namespace Ui
+namespace BitTorrent
 {
-    class UpDownRatioDialog;
+    // Using `Q_ENUM_NS()` without a wrapper namespace in our case is not advised
+    // since `Q_NAMESPACE` cannot be used when the same namespace resides at different files.
+    // https://www.kdab.com/new-qt-5-8-meta-object-support-namespaces/#comment-143779
+    inline namespace TorrentContentLayoutNS
+    {
+        Q_NAMESPACE
+
+        enum class TorrentContentLayout
+        {
+            Original,
+            Subfolder,
+            NoSubfolder
+        };
+
+        Q_ENUM_NS(TorrentContentLayout)
+    }
 }
-
-class UpDownRatioDialog final : public QDialog
-{
-    Q_OBJECT
-
-public:
-    UpDownRatioDialog(bool useDefault, qreal initialValue, qreal maxValue,
-            int initialTimeValue, int maxTimeValue,
-            QWidget *parent = nullptr);
-    ~UpDownRatioDialog();
-
-    bool useDefault() const;
-    qreal ratio() const;
-    int seedingTime() const;
-
-public slots:
-    void accept() override;
-
-private slots:
-    void handleRatioTypeChanged();
-    void enableRatioSpin();
-    void enableTimeSpin();
-
-private:
-    Ui::UpDownRatioDialog *m_ui;
-};
-
-#endif // UPDOWNRATIODIALOG_H
