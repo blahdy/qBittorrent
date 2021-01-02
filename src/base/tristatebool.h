@@ -26,8 +26,9 @@
  * exception statement from your version.
  */
 
-#ifndef TRISTATEBOOL_H
-#define TRISTATEBOOL_H
+#pragma once
+
+class QString;
 
 class TriStateBool
 {
@@ -43,7 +44,7 @@ public:
         *this = boolean ? True : False;
     }
 
-    TriStateBool &operator=(const TriStateBool &other) = default;  // TODO: add constexpr when using C++17
+    constexpr TriStateBool &operator=(const TriStateBool &other) = default;
 
     explicit constexpr operator signed char() const
     {
@@ -54,6 +55,8 @@ public:
     {
         return (left.m_value == right.m_value);
     }
+
+    static TriStateBool fromString(const QString &string);
 
 private:
     explicit constexpr TriStateBool(const int value)
@@ -68,5 +71,3 @@ constexpr bool operator!=(const TriStateBool &left, const TriStateBool &right)
 {
     return !(left == right);
 }
-
-#endif // TRISTATEBOOL_H

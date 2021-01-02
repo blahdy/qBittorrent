@@ -88,6 +88,7 @@ namespace
         {
         case QLocale::Arabic: return QString::fromUtf8(C_LOCALE_ARABIC);
         case QLocale::Armenian: return QString::fromUtf8(C_LOCALE_ARMENIAN);
+        case QLocale::Azerbaijani: return QString::fromUtf8(C_LOCALE_AZERBAIJANI);
         case QLocale::Basque: return QString::fromUtf8(C_LOCALE_BASQUE);
         case QLocale::Bulgarian: return QString::fromUtf8(C_LOCALE_BULGARIAN);
         case QLocale::Byelorussian: return QString::fromUtf8(C_LOCALE_BYELORUSSIAN);
@@ -110,6 +111,7 @@ namespace
             case QLocale::UnitedKingdom: return QString::fromUtf8(C_LOCALE_ENGLISH_UNITEDKINGDOM);
             default: return QString::fromUtf8(C_LOCALE_ENGLISH);
             }
+        case QLocale::Estonian: return QString::fromUtf8(C_LOCALE_ESTONIAN);
         case QLocale::Finnish: return QString::fromUtf8(C_LOCALE_FINNISH);
         case QLocale::French: return QString::fromUtf8(C_LOCALE_FRENCH);
         case QLocale::Galician: return QString::fromUtf8(C_LOCALE_GALICIAN);
@@ -358,7 +360,7 @@ OptionsDialog::OptionsDialog(QWidget *parent)
     connect(m_ui->checkAdditionDialog, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkAdditionDialogFront, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkStartPaused, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
-    connect(m_ui->checkKeepTopLevelFolder, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
+    connect(m_ui->contentLayoutComboBox, qComboBoxCurrentIndexChanged, this, &ThisType::enableApplyButton);
     connect(m_ui->deleteTorrentBox, &QGroupBox::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->deleteCancelledTorrentBox, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkExportDir, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
@@ -752,7 +754,7 @@ void OptionsDialog::saveOptions()
     AddNewTorrentDialog::setEnabled(useAdditionDialog());
     AddNewTorrentDialog::setTopLevel(m_ui->checkAdditionDialogFront->isChecked());
     session->setAddTorrentPaused(addTorrentsInPause());
-    session->setKeepTorrentTopLevelFolder(m_ui->checkKeepTopLevelFolder->isChecked());
+    session->setTorrentContentLayout(static_cast<BitTorrent::TorrentContentLayout>(m_ui->contentLayoutComboBox->currentIndex()));
     ScanFoldersModel::instance()->removeFromFSWatcher(m_removedScanDirs);
     ScanFoldersModel::instance()->addToFSWatcher(m_addedScanDirs);
     ScanFoldersModel::instance()->makePersistent();
@@ -1000,7 +1002,7 @@ void OptionsDialog::loadOptions()
     m_ui->checkAdditionDialog->setChecked(AddNewTorrentDialog::isEnabled());
     m_ui->checkAdditionDialogFront->setChecked(AddNewTorrentDialog::isTopLevel());
     m_ui->checkStartPaused->setChecked(session->isAddTorrentPaused());
-    m_ui->checkKeepTopLevelFolder->setChecked(session->isKeepTorrentTopLevelFolder());
+    m_ui->contentLayoutComboBox->setCurrentIndex(static_cast<int>(session->torrentContentLayout()));
     const TorrentFileGuard::AutoDeleteMode autoDeleteMode = TorrentFileGuard::autoDeleteMode();
     m_ui->deleteTorrentBox->setChecked(autoDeleteMode != TorrentFileGuard::Never);
     m_ui->deleteCancelledTorrentBox->setChecked(autoDeleteMode == TorrentFileGuard::Always);
@@ -1612,6 +1614,8 @@ void OptionsDialog::setLocale(const QString &localeStr)
         QLocale locale(localeStr);
         if (locale.language() == QLocale::Uzbek)
             name = "uz@Latn";
+        else if (locale.language() == QLocale::Azerbaijani)
+            name = "az@latin";
         else
             name = locale.name();
     }

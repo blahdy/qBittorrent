@@ -27,19 +27,17 @@
  * exception statement from your version.
  */
 
-#ifndef PREFERENCES_H
-#define PREFERENCES_H
+#pragma once
 
-#include <QList>
+#include <QtContainerFwd>
+#include <QVariant>
 
 #include "base/utils/net.h"
 
 class QDateTime;
 class QNetworkCookie;
 class QSize;
-class QStringList;
 class QTime;
-class QVariant;
 
 enum SchedulerDays
 {
@@ -404,5 +402,3 @@ public slots:
 
     void apply();
 };
-
-#endif // PREFERENCES_H
