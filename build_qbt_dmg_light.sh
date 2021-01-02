@@ -10,7 +10,7 @@ depsdir="${workdir%/}/ext"      # all dependencies will be placed here
 cd ${workdir}
 
 # download Qt from Git repository
-qt_branch=v5.15.1               # Qt version to use
+qt_branch=v5.15.2               # Qt version to use
 git clone https://code.qt.io/qt/qt5.git
 cd qt5
 git checkout ${qt_branch}
@@ -44,7 +44,7 @@ make install
 cd ${workdir}
 
 # download and build Boost
-boost_ver=1.74.0                # Boost version to use
+boost_ver=1.75.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
 curl -L https://dl.bintray.com/boostorg/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
@@ -57,12 +57,12 @@ cd boost_${boost_ver_u}
 cd ..
 
 # download CMake and Ninja
-cmake_ver=3.18.4                # CMake version to use
-curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-Darwin-x86_64.tar.gz | tar xz
+cmake_ver=3.19.2                # CMake version to use
+curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
 cmakedir=$(ls | grep cmake)
 cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
 
-ninja_ver=1.10.1                # Ninja version to use
+ninja_ver=1.10.2                # Ninja version to use
 curl -O -J -L https://github.com/ninja-build/ninja/releases/download/v${ninja_ver}/ninja-mac.zip
 unzip -d "${depsdir}/bin" ninja-mac.zip
 
@@ -97,9 +97,6 @@ cd qBittorrent-${qbt_branch}
 # patches are completely optional.
 # first patch disables Qt translations deployment, I'll do it later.
 curl -L -s "https://www.dropbox.com/s/pnri68xsdhu5rej/qbt-no-predef-qt-stuff-cmake.patch?dl=1" | patch -p1
-
-# better HiDPI support
-curl -L -s "https://www.dropbox.com/s/2crekp814e5m2vj/hidpi-hacks-new.patch?dl=1" | patch -p1
 
 # cmake doesn't understand qmake' placeholders in Info.plist, so change them
 perl -pi -e "s/\@EXECUTABLE\@/\\$\\{MACOSX_BUNDLE_EXECUTABLE_NAME\\}/g" dist/mac/Info.plist
@@ -151,6 +148,5 @@ fi
 # move created .dmg file to user's Downloads directory, it is writable everywhere
 mv "$out_file" "$HOME/Downloads/"
 
-# cleanup
-cd "${workdir}/.."
+cd ${workdir}
 rm -rf "${workdir}"
