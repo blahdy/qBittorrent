@@ -69,7 +69,7 @@ unzip -d "${depsdir}/bin" ninja-mac.zip
 # download and build libtorrent
 lt_branch=RC_1_2                # libtorrent version to use, use latest development version from 1.2.x versions
 
-curl -L https://github.com/arvidn/libtorrent/archive/${lt_branch}.tar.gz | tar xz
+curl -L https://github.com/arvidn/libtorrent/releases/download/libtorrent-1_2_4/libtorrent-rasterbar-1.2.4.tar.gz | tar xz
 
 cd libtorrent-${lt_branch}
 # I build static library, something was changed and now linker produce few warnings during qBittorrent building,
