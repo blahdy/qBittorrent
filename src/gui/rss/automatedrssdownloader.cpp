@@ -269,8 +269,10 @@ void AutomatedRssDownloader::updateRuleDefinitionBox()
         if (m_currentRule.assignedCategory().isEmpty())
             m_ui->comboCategory->clearEditText();
         int index = 0;
-        if (m_currentRule.addPaused().has_value())
-            index = (*m_currentRule.addPaused() ? 1 : 2);
+        if (m_currentRule.addPaused() == TriStateBool::True)
+            index = 1;
+        else if (m_currentRule.addPaused() == TriStateBool::False)
+            index = 2;
         m_ui->comboAddPaused->setCurrentIndex(index);
         index = 0;
         if (m_currentRule.torrentContentLayout())
@@ -345,14 +347,14 @@ void AutomatedRssDownloader::updateEditedRule()
     m_currentRule.setEpisodeFilter(m_ui->lineEFilter->text());
     m_currentRule.setSavePath(m_ui->checkBoxSaveDiffDir->isChecked() ? m_ui->lineSavePath->selectedPath() : "");
     m_currentRule.setCategory(m_ui->comboCategory->currentText());
-    std::optional<bool> addPaused;
+    TriStateBool addPaused; // Undefined by default
     if (m_ui->comboAddPaused->currentIndex() == 1)
-        addPaused = true;
+        addPaused = TriStateBool::True;
     else if (m_ui->comboAddPaused->currentIndex() == 2)
-        addPaused = false;
+        addPaused = TriStateBool::False;
     m_currentRule.setAddPaused(addPaused);
 
-    std::optional<BitTorrent::TorrentContentLayout> contentLayout;
+    boost::optional<BitTorrent::TorrentContentLayout> contentLayout;
     if (m_ui->comboContentLayout->currentIndex() > 0)
         contentLayout = static_cast<BitTorrent::TorrentContentLayout>(m_ui->comboContentLayout->currentIndex() - 1);
     m_currentRule.setTorrentContentLayout(contentLayout);

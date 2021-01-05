@@ -73,6 +73,7 @@ HEADERS += \
     $$PWD/settingvalue.h \
     $$PWD/torrentfileguard.h \
     $$PWD/torrentfilter.h \
+    $$PWD/tristatebool.h \
     $$PWD/types.h \
     $$PWD/unicodestrings.h \
     $$PWD/utils/bytearray.h \
@@ -149,6 +150,7 @@ SOURCES += \
     $$PWD/settingsstorage.cpp \
     $$PWD/torrentfileguard.cpp \
     $$PWD/torrentfilter.cpp \
+    $$PWD/tristatebool.cpp \
     $$PWD/utils/bytearray.cpp \
     $$PWD/utils/foreignapps.cpp \
     $$PWD/utils/fs.cpp \

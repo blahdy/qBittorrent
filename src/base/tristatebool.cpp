@@ -1,8 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2016  Eugene Shalygin <eugene.shalygin@gmail.com>
- * Copyright (C) 2014  Vladimir Golovnev <glassez@yandex.ru>
- * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2015  Vladimir Golovnev <glassez@yandex.ru>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,55 +26,19 @@
  * exception statement from your version.
  */
 
-#pragma once
-
-#include <stdexcept>
+#include "tristatebool.h"
 
 #include <QString>
-#include <QStringList>
 
-#include "base/tristatebool.h"
+const TriStateBool TriStateBool::Undefined(-1);
+const TriStateBool TriStateBool::False(0);
+const TriStateBool TriStateBool::True(1);
 
-class QProcessEnvironment;
-
-struct QBtCommandLineParameters
+TriStateBool TriStateBool::fromString(const QString &string)
 {
-    bool showHelp;
-    bool relativeFastresumePaths;
-    bool skipChecking;
-    bool sequential;
-    bool firstLastPiecePriority;
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
-    bool showVersion;
-#endif
-#ifndef DISABLE_GUI
-    bool noSplash;
-#elif !defined(Q_OS_WIN)
-    bool shouldDaemonize;
-#endif
-    int webUiPort;
-    TriStateBool addPaused;
-    TriStateBool skipDialog;
-    QStringList torrents;
-    QString profileDir;
-    QString configurationName;
-    QString savePath;
-    QString category;
-    QString unknownParameter;
-
-    explicit QBtCommandLineParameters(const QProcessEnvironment &);
-    QStringList paramList() const;
-};
-
-class CommandLineParameterError : public std::runtime_error
-{
-public:
-    explicit CommandLineParameterError(const QString &messageForUser);
-    const QString &messageForUser() const;
-
-private:
-    const QString m_messageForUser;
-};
-
-QBtCommandLineParameters parseCommandLine(const QStringList &args);
-void displayUsage(const QString &prgName);
+    if (string.compare("true", Qt::CaseInsensitive) == 0)
+        return True;
+    if (string.compare("false", Qt::CaseInsensitive) == 0)
+        return False;
+    return Undefined;
+}

@@ -1,8 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2016  Eugene Shalygin <eugene.shalygin@gmail.com>
- * Copyright (C) 2014  Vladimir Golovnev <glassez@yandex.ru>
- * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
+ * Copyright (C) 2015  Vladimir Golovnev <glassez@yandex.ru>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,53 +28,46 @@
 
 #pragma once
 
-#include <stdexcept>
+class QString;
 
-#include <QString>
-#include <QStringList>
-
-#include "base/tristatebool.h"
-
-class QProcessEnvironment;
-
-struct QBtCommandLineParameters
-{
-    bool showHelp;
-    bool relativeFastresumePaths;
-    bool skipChecking;
-    bool sequential;
-    bool firstLastPiecePriority;
-#if !defined(Q_OS_WIN) || defined(DISABLE_GUI)
-    bool showVersion;
-#endif
-#ifndef DISABLE_GUI
-    bool noSplash;
-#elif !defined(Q_OS_WIN)
-    bool shouldDaemonize;
-#endif
-    int webUiPort;
-    TriStateBool addPaused;
-    TriStateBool skipDialog;
-    QStringList torrents;
-    QString profileDir;
-    QString configurationName;
-    QString savePath;
-    QString category;
-    QString unknownParameter;
-
-    explicit QBtCommandLineParameters(const QProcessEnvironment &);
-    QStringList paramList() const;
-};
-
-class CommandLineParameterError : public std::runtime_error
+class TriStateBool
 {
 public:
-    explicit CommandLineParameterError(const QString &messageForUser);
-    const QString &messageForUser() const;
+    static const TriStateBool Undefined;
+    static const TriStateBool False;
+    static const TriStateBool True;
+
+    constexpr TriStateBool() = default;
+    constexpr TriStateBool(const TriStateBool &other) = default;
+    explicit constexpr TriStateBool(const bool boolean)
+    {
+        *this = boolean ? True : False;
+    }
+
+    constexpr TriStateBool &operator=(const TriStateBool &other) = default;
+
+    explicit constexpr operator signed char() const
+    {
+        return m_value;
+    }
+
+    constexpr friend bool operator==(const TriStateBool &left, const TriStateBool &right)
+    {
+        return (left.m_value == right.m_value);
+    }
+
+    static TriStateBool fromString(const QString &string);
 
 private:
-    const QString m_messageForUser;
+    explicit constexpr TriStateBool(const int value)
+        : m_value((value < 0) ? -1 : ((value > 0) ? 1 : 0))
+    {
+    }
+
+    signed char m_value = -1; // Undefined by default
 };
 
-QBtCommandLineParameters parseCommandLine(const QStringList &args);
-void displayUsage(const QString &prgName);
+constexpr bool operator!=(const TriStateBool &left, const TriStateBool &right)
+{
+    return !(left == right);
+}
