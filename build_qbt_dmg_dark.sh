@@ -67,11 +67,10 @@ curl -O -J -L https://github.com/ninja-build/ninja/releases/download/v${ninja_ve
 unzip -d "${depsdir}/bin" ninja-mac.zip
 
 # download and build libtorrent
-lt_branch=RC_1_2                # libtorrent version to use, use latest development version from 1.2.x versions
 
-curl -L https://github.com/arvidn/libtorrent/archive/${lt_branch}.tar.gz | tar xz
+git clone --recurse-submodules https://github.com/blahdy/libtorrent.git
 
-cd libtorrent-${lt_branch}
+cd libtorrent
 # I build static library, something was changed and now linker produce few warnings during qBittorrent building,
 # so apply patch to fix these warnings. I don't know is they are critical or not, but I just don't like them.
 # this fix is just "quick fix" or workaround, so merge request was not submitted to the developers.
