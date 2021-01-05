@@ -78,7 +78,6 @@
 #include "base/profile.h"
 #include "base/torrentfileguard.h"
 #include "base/torrentfilter.h"
-#include "base/tristatebool.h"
 #include "base/unicodestrings.h"
 #include "base/utils/bytearray.h"
 #include "base/utils/fs.h"
@@ -2039,14 +2038,14 @@ bool Session::addTorrent(const MagnetUri &magnetUri, const AddTorrentParams &par
 {
     if (!magnetUri.isValid()) return false;
 
-    return addTorrent_impl(params, magnetUri);
+    return addTorrent_impl(magnetUri, params);
 }
 
 bool Session::addTorrent(const TorrentInfo &torrentInfo, const AddTorrentParams &params)
 {
     if (!torrentInfo.isValid()) return false;
 
-    return addTorrent_impl(params, MagnetUri(), torrentInfo);
+    return addTorrent_impl(torrentInfo, params);
 }
 
 LoadTorrentParams Session::initLoadTorrentParams(const AddTorrentParams &addTorrentParams)
@@ -2057,19 +2056,13 @@ LoadTorrentParams Session::initLoadTorrentParams(const AddTorrentParams &addTorr
     loadTorrentParams.tags = addTorrentParams.tags;
     loadTorrentParams.firstLastPiecePriority = addTorrentParams.firstLastPiecePriority;
     loadTorrentParams.hasSeedStatus = addTorrentParams.skipChecking; // do not react on 'torrent_finished_alert' when skipping
-    loadTorrentParams.contentLayout = (addTorrentParams.contentLayout
-                                       ? *addTorrentParams.contentLayout
-                                       : torrentContentLayout());
-    loadTorrentParams.forced = (addTorrentParams.addForced == TriStateBool::True);
-    loadTorrentParams.paused = ((addTorrentParams.addPaused == TriStateBool::Undefined)
-                    ? isAddTorrentPaused()
-                    : (addTorrentParams.addPaused == TriStateBool::True));
+    loadTorrentParams.contentLayout = addTorrentParams.contentLayout.value_or(torrentContentLayout());
+    loadTorrentParams.forced = addTorrentParams.addForced;
+    loadTorrentParams.paused = addTorrentParams.addPaused.value_or(isAddTorrentPaused());
     loadTorrentParams.ratioLimit = addTorrentParams.ratioLimit;
     loadTorrentParams.seedingTimeLimit = addTorrentParams.seedingTimeLimit;
 
-    const bool useAutoTMM = ((addTorrentParams.useAutoTMM == TriStateBool::Undefined)
-                           ? !isAutoTMMDisabledByDefault()
-                           : (addTorrentParams.useAutoTMM == TriStateBool::True));
+    const bool useAutoTMM = addTorrentParams.useAutoTMM.value_or(!isAutoTMMDisabledByDefault());
     if (useAutoTMM)
         loadTorrentParams.savePath = "";
     else if (addTorrentParams.savePath.trimmed().isEmpty())
@@ -2087,9 +2080,11 @@ LoadTorrentParams Session::initLoadTorrentParams(const AddTorrentParams &addTorr
 }
 
 // Add a torrent to the BitTorrent session
-bool Session::addTorrent_impl(const AddTorrentParams &addTorrentParams, const MagnetUri &magnetUri, TorrentInfo metadata)
+bool Session::addTorrent_impl(const std::variant<MagnetUri, TorrentInfo> &source, const AddTorrentParams &addTorrentParams)
 {
-    const bool hasMetadata = metadata.isValid();
+    const bool hasMetadata = std::holds_alternative<TorrentInfo>(source);
+    TorrentInfo metadata = (hasMetadata ? std::get<TorrentInfo>(source) : TorrentInfo {});
+    const MagnetUri &magnetUri = (hasMetadata ? MagnetUri {} : std::get<MagnetUri>(source));
     const InfoHash hash = (hasMetadata ? metadata.hash() : magnetUri.hash());
 
     // It looks illogical that we don't just use an existing handle,
