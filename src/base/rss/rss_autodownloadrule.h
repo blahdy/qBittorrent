@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include <optional>
+#include <boost/optional.hpp>
 
 #include <QSharedDataPointer>
 #include <QVariant>
@@ -39,6 +39,8 @@
 class QDateTime;
 class QJsonObject;
 class QRegularExpression;
+
+class TriStateBool;
 
 namespace RSS
 {
@@ -79,10 +81,10 @@ namespace RSS
 
         QString savePath() const;
         void setSavePath(const QString &savePath);
-        std::optional<bool> addPaused() const;
-        void setAddPaused(std::optional<bool> addPaused);
-        std::optional<BitTorrent::TorrentContentLayout> torrentContentLayout() const;
-        void setTorrentContentLayout(std::optional<BitTorrent::TorrentContentLayout> contentLayout);
+        TriStateBool addPaused() const;
+        void setAddPaused(TriStateBool addPaused);
+        boost::optional<BitTorrent::TorrentContentLayout> torrentContentLayout() const;
+        void setTorrentContentLayout(boost::optional<BitTorrent::TorrentContentLayout> contentLayout);
         QString assignedCategory() const;
         void setCategory(const QString &category);
 

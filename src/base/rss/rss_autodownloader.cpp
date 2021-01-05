@@ -47,6 +47,7 @@
 #include "../logger.h"
 #include "../profile.h"
 #include "../settingsstorage.h"
+#include "../tristatebool.h"
 #include "../utils/fs.h"
 #include "rss_article.h"
 #include "rss_autodownloadrule.h"
@@ -397,7 +398,7 @@ void AutoDownloader::processJob(const QSharedPointer<ProcessingJob> &job)
         params.addPaused = rule.addPaused();
         params.contentLayout = rule.torrentContentLayout();
         if (!rule.savePath().isEmpty())
-            params.useAutoTMM = false;
+            params.useAutoTMM = TriStateBool::False;
         const auto torrentURL = job->articleData.value(Article::KeyTorrentURL).toString();
         BitTorrent::Session::instance()->addTorrent(torrentURL, params);
 

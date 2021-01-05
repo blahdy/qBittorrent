@@ -366,12 +366,12 @@ void ScanFoldersModel::addTorrentsToSession(const QStringList &pathList)
         if (downloadInWatchFolder(file))
         {
             params.savePath = QFileInfo(file).dir().path();
-            params.useAutoTMM = false;
+            params.useAutoTMM = TriStateBool::False;
         }
         else if (!downloadInDefaultFolder(file))
         {
             params.savePath = downloadPathTorrentFolder(file);
-            params.useAutoTMM = false;
+            params.useAutoTMM = TriStateBool::False;
         }
 
         if (file.endsWith(".magnet", Qt::CaseInsensitive))
