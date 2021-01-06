@@ -56,7 +56,7 @@ add_subdirectory(src)
 add_subdirectory(dist)
 
 # Generate version header
-set(QBT_VER_STATUS "alpha1" CACHE STRING "Project status version. Should be empty for release builds.")
+set(QBT_VER_STATUS "" CACHE STRING "Project status version. Should be empty for release builds.")
 
 set(QBT_PROJECT_VERSION "${qBittorrent_VERSION_MAJOR}.${qBittorrent_VERSION_MINOR}.${qBittorrent_VERSION_PATCH}")
 if (NOT ${qBittorrent_VERSION_TWEAK} EQUAL 0)
