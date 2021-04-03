@@ -48,7 +48,8 @@ namespace BitTorrent
         QString savePath;
         TorrentContentLayout contentLayout = TorrentContentLayout::Original;
         TorrentOperatingMode operatingMode = TorrentOperatingMode::AutoManaged;
-        bool firstLastPiecePriority = false;
+        bool firstLastPiecePriority = true;
+        bool sequential = true;
         bool hasSeedStatus = false;
         bool stopped = false;
 

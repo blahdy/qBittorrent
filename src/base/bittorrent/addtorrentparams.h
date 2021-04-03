@@ -48,8 +48,8 @@ namespace BitTorrent
         QSet<QString> tags;
         QString savePath;
         bool disableTempPath = false; // e.g. for imported torrents
-        bool sequential = false;
-        bool firstLastPiecePriority = false;
+        bool sequential = true;
+        bool firstLastPiecePriority = true;
         bool addForced = false;
         std::optional<bool> addPaused;
         QVector<DownloadPriority> filePriorities; // used if TorrentInfo is set
