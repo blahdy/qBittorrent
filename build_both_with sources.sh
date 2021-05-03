@@ -37,7 +37,7 @@ cd qt5
 
 qtbuilddir="../build-qt"
 mkdir ${qtbuilddir} && cd ${qtbuilddir}
-${workdir}/qt5/configure -prefix "${depsdir}" -opensource -confirm-license -release -appstore-compliant -c++std c++14 -no-pch -I "${depsdir}/include" -L "${depsdir}/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-sql -no-feature-concurrent
+${workdir}/qt5/configure -prefix "${depsdir}" -opensource -confirm-license -release -appstore-compliant -c++std c++14 -no-pch -I "${depsdir}/include" -L "${depsdir}/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-concurrent
 make -j$(sysctl -n hw.ncpu)
 make install
 
@@ -47,7 +47,7 @@ cd ${workdir}
 boost_ver=1.76.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
-curl -L https://dl.bintray.com/boostorg/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
+curl -L https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
 
 cd boost_${boost_ver_u}
 
@@ -57,7 +57,7 @@ cd boost_${boost_ver_u}
 cd ..
 
 # download CMake and Ninja
-cmake_ver=3.20.1                # CMake version to use
+cmake_ver=3.20.2                # CMake version to use
 curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
 cmakedir=$(ls | grep cmake)
 cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
@@ -76,7 +76,7 @@ cd libtorrent
 # this fix is just "quick fix" or workaround, so merge request was not submitted to the developers.
 curl -L -s "https://www.dropbox.com/s/ym7fegg4f3hwwnt/lt-static-link-warning-fix.patch?dl=1" | patch -p1
 
-${cmake} -B build -G Ninja -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -Ddeprecated-functions=OFF -DCMAKE_INSTALL_PREFIX=${depsdir}
+${cmake} -B build -G Ninja -Wno-dev -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -Ddeprecated-functions=OFF -DCMAKE_INSTALL_PREFIX=${depsdir}
 ${cmake} --build build
 ${cmake} --install build
 
