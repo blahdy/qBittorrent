@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2015, 2018  Vladimir Golovnev <glassez@yandex.ru>
+ * Copyright (C) 2021  Mike Tzou (Chocobo1)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -26,43 +26,12 @@
  * exception statement from your version.
  */
 
-#pragma once
+#include "tagset.h"
 
-#include <QDir>
-#include <QVector>
-
-#include "resumedatastorage.h"
-
-class QByteArray;
-class QThread;
-
-namespace BitTorrent
+bool TagLessThan::operator()(const QString &left, const QString &right) const
 {
-    class TorrentInfo;
-
-    class BencodeResumeDataStorage final : public ResumeDataStorage
-    {
-        Q_OBJECT
-        Q_DISABLE_COPY(BencodeResumeDataStorage)
-
-    public:
-        explicit BencodeResumeDataStorage(const QString &path, QObject *parent = nullptr);
-        ~BencodeResumeDataStorage() override;
-
-        QVector<TorrentID> registeredTorrents() const override;
-        std::optional<LoadTorrentParams> load(const TorrentID &id) const override;
-        void store(const TorrentID &id, const LoadTorrentParams &resumeData) const override;
-        void remove(const TorrentID &id) const override;
-        void storeQueue(const QVector<TorrentID> &queue) const override;
-
-    private:
-        std::optional<LoadTorrentParams> loadTorrentResumeData(const QByteArray &data, const TorrentInfo &metadata) const;
-
-        const QDir m_resumeDataDir;
-        QVector<TorrentID> m_registeredTorrents;
-        QThread *m_ioThread = nullptr;
-
-        class Worker;
-        Worker *m_asyncWorker = nullptr;
-    };
+    const int result = m_compare(left, right);
+    if (result != 0)
+        return (result < 0);
+    return (m_subCompare(left, right) < 0);
 }

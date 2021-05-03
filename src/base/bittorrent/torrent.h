@@ -33,6 +33,7 @@
 #include <QString>
 #include <QtContainerFwd>
 
+#include "base/tagset.h"
 #include "abstractfilestorage.h"
 
 class QBitArray;
@@ -49,11 +50,21 @@ namespace BitTorrent
     struct PeerAddress;
     struct TrackerEntry;
 
-    enum class TorrentOperatingMode
+    // Using `Q_ENUM_NS()` without a wrapper namespace in our case is not advised
+    // since `Q_NAMESPACE` cannot be used when the same namespace resides at different files.
+    // https://www.kdab.com/new-qt-5-8-meta-object-support-namespaces/#comment-143779
+    inline namespace TorrentOperatingModeNS
     {
-        AutoManaged = 0,
-        Forced = 1
-    };
+        Q_NAMESPACE
+
+        enum class TorrentOperatingMode
+        {
+            AutoManaged = 0,
+            Forced = 1
+        };
+
+        Q_ENUM_NS(TorrentOperatingMode)
+    }
 
     enum class TorrentState
     {
@@ -168,7 +179,7 @@ namespace BitTorrent
         virtual bool belongsToCategory(const QString &category) const = 0;
         virtual bool setCategory(const QString &category) = 0;
 
-        virtual QSet<QString> tags() const = 0;
+        virtual TagSet tags() const = 0;
         virtual bool hasTag(const QString &tag) const = 0;
         virtual bool addTag(const QString &tag) = 0;
         virtual bool removeTag(const QString &tag) = 0;
