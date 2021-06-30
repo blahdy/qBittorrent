@@ -57,7 +57,7 @@ cd boost_${boost_ver_u}
 cd ..
 
 # download CMake and Ninja
-cmake_ver=3.20.2                # CMake version to use
+cmake_ver=3.21.0-rc2                # CMake version to use
 curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
 cmakedir=$(ls | grep cmake)
 cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
