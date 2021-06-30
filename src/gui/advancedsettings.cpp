@@ -83,6 +83,7 @@ namespace
         NOTIFICATION_TIMEOUT,
 #endif
         CONFIRM_REMOVE_ALL_TAGS,
+        REANNOUNCE_WHEN_ADDRESS_CHANGED,
         DOWNLOAD_TRACKER_FAVICON,
         SAVE_PATH_HISTORY_LENGTH,
         ENABLE_SPEED_WIDGET,
@@ -115,6 +116,7 @@ namespace
         SEND_BUF_LOW_WATERMARK,
         SEND_BUF_WATERMARK_FACTOR,
         // networking & ports
+        CONNECTION_SPEED,
         SOCKET_BACKLOG_SIZE,
         OUTGOING_PORT_MIN,
         OUTGOING_PORT_MAX,
@@ -223,6 +225,8 @@ void AdvancedSettings::saveAdvancedSettings()
     session->setSendBufferWatermark(m_spinBoxSendBufferWatermark.value());
     session->setSendBufferLowWatermark(m_spinBoxSendBufferLowWatermark.value());
     session->setSendBufferWatermarkFactor(m_spinBoxSendBufferWatermarkFactor.value());
+    // Outgoing connections per second
+    session->setConnectionSpeed(m_spinBoxConnectionSpeed.value());
     // Socket listen backlog size
     session->setSocketBacklogSize(m_spinBoxSocketBacklogSize.value());
     // Save resume data interval
@@ -284,6 +288,8 @@ void AdvancedSettings::saveAdvancedSettings()
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)) && defined(QT_DBUS_LIB)
     mainWindow->setNotificationTimeout(m_spinBoxNotificationTimeout.value());
 #endif
+    // Reannounce to all trackers when ip/port changed
+    session->setReannounceWhenAddressChangedEnabled(m_checkBoxReannounceWhenAddressChanged.isChecked());
     // Misc GUI properties
     mainWindow->setDownloadTrackerFavicon(m_checkBoxTrackerFavicon.isChecked());
     AddNewTorrentDialog::setSavePathHistoryLength(m_spinBoxSavePathHistoryLength.value());
@@ -525,6 +531,12 @@ void AdvancedSettings::loadAdvancedSettings()
     m_spinBoxSendBufferWatermarkFactor.setValue(session->sendBufferWatermarkFactor());
     addRow(SEND_BUF_WATERMARK_FACTOR, (tr("Send buffer watermark factor") + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#send_buffer_watermark_factor", "(?)"))
             , &m_spinBoxSendBufferWatermarkFactor);
+    // Outgoing connections per second
+    m_spinBoxConnectionSpeed.setMinimum(0);
+    m_spinBoxConnectionSpeed.setMaximum(std::numeric_limits<int>::max());
+    m_spinBoxConnectionSpeed.setValue(session->connectionSpeed());
+    addRow(CONNECTION_SPEED, (tr("Outgoing connections per second") + ' ' + makeLink("https://www.libtorrent.org/reference-Settings.html#connection_speed", "(?)"))
+            , &m_spinBoxConnectionSpeed);
     // Socket listen backlog size
     m_spinBoxSocketBacklogSize.setMinimum(1);
     m_spinBoxSocketBacklogSize.setMaximum(std::numeric_limits<int>::max());
@@ -664,6 +676,9 @@ void AdvancedSettings::loadAdvancedSettings()
     m_spinBoxNotificationTimeout.setSuffix(tr(" ms", " milliseconds"));
     addRow(NOTIFICATION_TIMEOUT, tr("Notification timeout [0: infinite]"), &m_spinBoxNotificationTimeout);
 #endif
+    // Reannounce to all trackers when ip/port changed
+    m_checkBoxReannounceWhenAddressChanged.setChecked(session->isReannounceWhenAddressChangedEnabled());
+    addRow(REANNOUNCE_WHEN_ADDRESS_CHANGED, tr("Reannounce to all trackers when IP or port changed"), &m_checkBoxReannounceWhenAddressChanged);
     // Download tracker's favicon
     m_checkBoxTrackerFavicon.setChecked(mainWindow->isDownloadTrackerFavicon());
     addRow(DOWNLOAD_TRACKER_FAVICON, tr("Download tracker's favicon"), &m_checkBoxTrackerFavicon);
