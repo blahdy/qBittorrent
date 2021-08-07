@@ -96,6 +96,10 @@ function genHash(string) {
     return hash;
 }
 
+function getTrackerHost(url) {
+    return new URL(url).hostname;
+}
+
 function getSyncMainDataInterval() {
     return customSyncMainDataInterval ? customSyncMainDataInterval : serverSyncMainDataInterval;
 }
@@ -225,6 +229,7 @@ window.addEvent('load', function() {
         $("stalled_filter").removeClass("selectedFilter");
         $("stalled_uploading_filter").removeClass("selectedFilter");
         $("stalled_downloading_filter").removeClass("selectedFilter");
+        $("checking_filter").removeClass("selectedFilter");
         $("errored_filter").removeClass("selectedFilter");
         $(f + "_filter").addClass("selectedFilter");
         selected_filter = f;
@@ -383,6 +388,7 @@ window.addEvent('load', function() {
         updateFilter('stalled', 'QBT_TR(Stalled (%1))QBT_TR[CONTEXT=StatusFilterWidget]');
         updateFilter('stalled_uploading', 'QBT_TR(Stalled Uploading (%1))QBT_TR[CONTEXT=StatusFilterWidget]');
         updateFilter('stalled_downloading', 'QBT_TR(Stalled Downloading (%1))QBT_TR[CONTEXT=StatusFilterWidget]');
+        updateFilter('checking', 'QBT_TR(Checking (%1))QBT_TR[CONTEXT=StatusFilterWidget]');
         updateFilter('errored', 'QBT_TR(Errored (%1))QBT_TR[CONTEXT=StatusFilterWidget]');
     };
 
@@ -620,9 +626,10 @@ window.addEvent('load', function() {
                     if (response['trackers']) {
                         for (const tracker in response['trackers']) {
                             const torrents = response['trackers'][tracker];
-                            const hash = genHash(tracker);
+                            const host = getTrackerHost(tracker);
+                            const hash = genHash(host);
                             trackerList.set(hash, {
-                                url: tracker,
+                                url: host,
                                 torrents: torrents
                             });
                         }
