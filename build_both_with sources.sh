@@ -18,7 +18,7 @@ perl init-repository --module-subset=qtbase,qtmacextras,qtsvg,qttools,qttranslat
 # detect minimum macOS version required by Qt and use this value while building all other stuff
 min_macos_ver=10.14
 # leave Qt sources for a while... some dependencies must be build before building Qt itself
-cd ..
+cd ${workdir}
 
 # download and build OpenSSL
 openssl_ver=OpenSSL_1_1_1-stable  # OpenSSL version to use
@@ -30,7 +30,7 @@ cd openssl-${openssl_ver}
 make -j$(sysctl -n hw.ncpu)
 make install_sw
 
-cd ..
+cd ${workdir}
 
 # so, Qt dependencies are satisfied now, time to build Qt
 cd qt5
@@ -54,10 +54,10 @@ cd boost_${boost_ver_u}
 ./bootstrap.sh
 ./b2 --prefix=${depsdir} --with-system variant=release link=static cxxflags="-std=c++17 -mmacosx-version-min=${min_macos_ver}" install
 
-cd ..
+cd ${workdir}
 
 # download CMake and Ninja
-cmake_ver=3.21.0-rc2                # CMake version to use
+cmake_ver=3.21.1                # CMake version to use
 curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
 cmakedir=$(ls | grep cmake)
 cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
@@ -80,7 +80,7 @@ ${cmake} -B build -G Ninja -Wno-dev -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_S
 ${cmake} --build build
 ${cmake} --install build
 
-cd ..
+cd ${workdir}
 
 # download and build qBittorrent - some magic comes here :)
 # download the sources
