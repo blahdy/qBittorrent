@@ -44,7 +44,7 @@ make install
 cd ${workdir}
 
 # download and build Boost
-boost_ver=1.76.0                # Boost version to use
+boost_ver=1.77.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
 curl -L https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
@@ -57,7 +57,7 @@ cd boost_${boost_ver_u}
 cd ${workdir}
 
 # download CMake and Ninja
-cmake_ver=3.21.1                # CMake version to use
+cmake_ver=3.21.2                # CMake version to use
 curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
 cmakedir=$(ls | grep cmake)
 cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
@@ -68,7 +68,7 @@ unzip -d "${depsdir}/bin" ninja-mac.zip
 
 # download and build libtorrent
 
-git clone --recurse-submodules https://github.com/blahdy/libtorrent.git
+git clone --recurse-submodules https://github.com/arvidn/libtorrent.git
 
 cd libtorrent
 # I build static library, something was changed and now linker produce few warnings during qBittorrent building,
