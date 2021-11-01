@@ -30,13 +30,11 @@
 
 #include <fstream>
 
-#include <libtorrent/bencode.hpp>
 #include <libtorrent/create_torrent.hpp>
 #include <libtorrent/file_storage.hpp>
 #include <libtorrent/torrent_info.hpp>
 
 #include <QDirIterator>
-#include <QFile>
 #include <QFileInfo>
 #include <QHash>
 
@@ -46,7 +44,7 @@
 #include "base/utils/fs.h"
 #include "base/utils/io.h"
 #include "base/version.h"
-#include "ltunderlyingtype.h"
+#include "lttypecast.h"
 
 namespace
 {
@@ -188,7 +186,7 @@ void TorrentCreatorThread::run()
             , [this, &newTorrent](const lt::piece_index_t n)
         {
             checkInterruptionRequested();
-            sendProgressSignal(toLTUnderlyingType(n), newTorrent.num_pieces());
+            sendProgressSignal(LT::toUnderlyingType(n), newTorrent.num_pieces());
         });
 
         // Set qBittorrent as creator and add user comment to
@@ -209,16 +207,9 @@ void TorrentCreatorThread::run()
         checkInterruptionRequested();
 
         // create the torrent
-        QFile outfile {m_params.savePath};
-        if (!outfile.open(QIODevice::WriteOnly))
-            throw RuntimeError(outfile.errorString());
-
-        checkInterruptionRequested();
-
-        lt::bencode(Utils::IO::FileDeviceOutputIterator {outfile}, entry);
-        if (outfile.error() != QFileDevice::NoError)
-            throw RuntimeError(outfile.errorString());
-        outfile.close();
+        const nonstd::expected<void, QString> result = Utils::IO::saveToFile(m_params.savePath, entry);
+        if (!result)
+            throw RuntimeError(result.error());
 
         emit updateProgress(100);
         emit creationSuccess(m_params.savePath, parentPath);

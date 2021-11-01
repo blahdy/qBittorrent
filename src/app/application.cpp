@@ -141,7 +141,9 @@ Application::Application(int &argc, char **argv)
     setOrganizationDomain("qbittorrent.org");
 #if !defined(DISABLE_GUI)
     setDesktopFileName("org.qbittorrent.qBittorrent");
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     setAttribute(Qt::AA_UseHighDpiPixmaps, true);  // opt-in to the high DPI pixmap support
+#endif
     setQuitOnLastWindowClosed(false);
     QPixmapCache::setCacheLimit(PIXMAP_CACHE_SIZE);
 #endif
@@ -665,8 +667,8 @@ int Application::exec(const QStringList &params)
     if (pref->getWebUIPassword() == "ARQ77eY1NUZaQsuDHbIMCA==:0WMRkYTUWVT9wVvdDtHAjU9b3b7uB8NR1Gur2hmQCvCDpm39Q+PsJRJPaCU51dEiz+dTzh8qbPsL8WkFljQYFQ==")
     {
         const QString warning = tr("The Web UI administrator username is: %1").arg(pref->getWebUiUsername()) + '\n'
-            + tr("The Web UI administrator password is still the default one: %1").arg("adminadmin") + '\n'
-            + tr("This is a security risk, please consider changing your password from program preferences.") + '\n';
+            + tr("The Web UI administrator password has not been changed from the default: %1").arg("adminadmin") + '\n'
+            + tr("This is a security risk, please change your password in program preferences.") + '\n';
         printf("%s", qUtf8Printable(warning));
     }
 #endif // DISABLE_WEBUI

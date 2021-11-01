@@ -1,4 +1,5 @@
 HEADERS += \
+    $$PWD/3rdparty/expected.hpp \
     $$PWD/algorithm.h \
     $$PWD/asyncfilestorage.h \
     $$PWD/bittorrent/abstractfilestorage.h \
@@ -15,7 +16,7 @@ HEADERS += \
     $$PWD/bittorrent/infohash.h \
     $$PWD/bittorrent/loadtorrentparams.h \
     $$PWD/bittorrent/ltqhash.h \
-    $$PWD/bittorrent/ltunderlyingtype.h \
+    $$PWD/bittorrent/lttypecast.h \
     $$PWD/bittorrent/magneturi.h \
     $$PWD/bittorrent/nativesessionextension.h \
     $$PWD/bittorrent/nativetorrentextension.h \

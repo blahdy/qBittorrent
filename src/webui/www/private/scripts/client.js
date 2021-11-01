@@ -88,21 +88,13 @@ const loadSelectedTracker = function() {
 loadSelectedTracker();
 
 function genHash(string) {
+    // origins:
+    // https://stackoverflow.com/a/8831937
+    // https://gist.github.com/hyamamoto/fd435505d29ebfa3d9716fd2be8d42f0
     let hash = 0;
-    for (let i = 0; i < string.length; ++i) {
-        const c = string.charCodeAt(i);
-        hash = (c + hash * 31) | 0;
-    }
+    for (let i = 0; i < string.length; ++i)
+        hash = ((Math.imul(hash, 31) + string.charCodeAt(i)) | 0);
     return hash;
-}
-
-function getTrackerHost(url) {
-    try {
-        return new URL(url).hostname;
-    }
-    catch (error) {
-        return url;
-    }
 }
 
 function getSyncMainDataInterval() {
@@ -631,10 +623,9 @@ window.addEvent('load', function() {
                     if (response['trackers']) {
                         for (const tracker in response['trackers']) {
                             const torrents = response['trackers'][tracker];
-                            const host = getTrackerHost(tracker);
-                            const hash = genHash(host);
+                            const hash = genHash(tracker);
                             trackerList.set(hash, {
-                                url: host,
+                                url: tracker,
                                 torrents: torrents
                             });
                         }
