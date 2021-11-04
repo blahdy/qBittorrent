@@ -95,13 +95,12 @@ cd qBittorrent-${qbt_branch}
 # developer and strictly don't know the "true" methods, and these changes were made in my own opinion.
 # patches are completely optional.
 # first patch disables Qt translations deployment, I'll do it later.
-curl -L -s "https://www.dropbox.com/s/pnri68xsdhu5rej/qbt-no-predef-qt-stuff-cmake.patch?dl=1" | patch -p1
 
 # cmake doesn't understand qmake' placeholders in Info.plist, so change them
 perl -pi -e "s/\@EXECUTABLE\@/\\$\\{MACOSX_BUNDLE_EXECUTABLE_NAME\\}/g" dist/mac/Info.plist
 perl -pi -e "s/\\$\\{MACOSX_DEPLOYMENT_TARGET\\}/${min_macos_ver}/g" dist/mac/Info.plist
 
-${cmake} -B build -G Ninja -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release
+${cmake} -B build -G Ninja -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -D QT6="ON"
 ${cmake} --build build
 
 # next part of this script is part from my another script used to build my own projects for macOS.
