@@ -10,11 +10,11 @@ depsdir="${workdir%/}/ext"      # all dependencies will be placed here
 cd ${workdir}
 
 # download Qt from Git repository
-qt_branch=5.15               # Qt version to use
+qt_branch=dev               # Qt version to use
 git clone https://code.qt.io/qt/qt5.git
 cd qt5
 git checkout ${qt_branch}
-perl init-repository --module-subset=qtbase,qtmacextras,qtsvg,qttools,qttranslations
+perl init-repository --module-subset=qtbase,qtsvg,qttools,qttranslations
 # detect minimum macOS version required by Qt and use this value while building all other stuff
 min_macos_ver=10.14
 # leave Qt sources for a while... some dependencies must be build before building Qt itself
@@ -32,12 +32,19 @@ make install_sw
 
 cd ${workdir}
 
+# download CMake and Ninja
+cmake_ver=3.22.0-rc2                # CMake version to use
+curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
+cmakedir=$(ls | grep cmake)
+cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
+PATH="${workdir}/cmake-${cmake_ver}-macos-universal/CMake.app/Contents/bin":"$PATH"
+
 # so, Qt dependencies are satisfied now, time to build Qt
 cd qt5
 
 qtbuilddir="../build-qt"
 mkdir ${qtbuilddir} && cd ${qtbuilddir}
-${workdir}/qt5/configure -prefix "${depsdir}" -opensource -confirm-license -release -appstore-compliant -c++std c++14 -no-pch -I "${depsdir}/include" -L "${depsdir}/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-concurrent
+${workdir}/qt5/configure -prefix "${depsdir}" -opensource -confirm-license -release -appstore-compliant -c++std c++17 -no-pch -I "${depsdir}/include" -L "${depsdir}/lib" -make libs -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-concurrent
 make -j$(sysctl -n hw.ncpu)
 make install
 
@@ -47,7 +54,7 @@ cd ${workdir}
 boost_ver=1.77.0                # Boost version to use
 
 boost_ver_u=${boost_ver//./_}
-curl -L https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_u}.tar.bz2 | tar xj
+curl -L https://boostorg.jfrog.io/artifactory/main/master/boost_${boost_ver_u}-snapshot.tar.bz2 | tar xj
 
 cd boost_${boost_ver_u}
 
@@ -55,12 +62,6 @@ cd boost_${boost_ver_u}
 ./b2 --prefix=${depsdir} --with-system variant=release link=static cxxflags="-std=c++17 -mmacosx-version-min=${min_macos_ver}" install
 
 cd ${workdir}
-
-# download CMake and Ninja
-cmake_ver=3.21.2                # CMake version to use
-curl -L https://github.com/Kitware/CMake/releases/download/v${cmake_ver}/cmake-${cmake_ver}-macos-universal.tar.gz | tar xz
-cmakedir=$(ls | grep cmake)
-cmake="${workdir}/${cmakedir}/CMake.app/Contents/bin/cmake"
 
 ninja_ver=1.10.2                # Ninja version to use
 curl -O -J -L https://github.com/ninja-build/ninja/releases/download/v${ninja_ver}/ninja-mac.zip
@@ -74,7 +75,6 @@ cd libtorrent
 # I build static library, something was changed and now linker produce few warnings during qBittorrent building,
 # so apply patch to fix these warnings. I don't know is they are critical or not, but I just don't like them.
 # this fix is just "quick fix" or workaround, so merge request was not submitted to the developers.
-curl -L -s "https://www.dropbox.com/s/ym7fegg4f3hwwnt/lt-static-link-warning-fix.patch?dl=1" | patch -p1
 
 ${cmake} -B build -G Ninja -Wno-dev -DCMAKE_PREFIX_PATH=${depsdir} -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=${min_macos_ver} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -Ddeprecated-functions=OFF -DCMAKE_INSTALL_PREFIX=${depsdir}
 ${cmake} --build build
