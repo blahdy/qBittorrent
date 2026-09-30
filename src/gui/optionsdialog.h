@@ -106,8 +106,6 @@ private slots:
     void setLocale(const QString &localeStr);
 
 #ifndef DISABLE_WEBUI
-    void webUIHttpsCertChanged(const Path &path);
-    void webUIHttpsKeyChanged(const Path &path);
     void on_registerDNSBtn_clicked();
     void onBtnWebUIAPIKeyCopyClicked();
     void onBtnWebUIAPIKeyRotateClicked();
@@ -146,7 +144,12 @@ private:
 #ifndef DISABLE_WEBUI
     void loadWebUITabOptions();
     void saveWebUITabOptions() const;
+    void updateWebUIHttpsCertStatus();
+    void updateWebUIHttpsKeyStatus();
+    void loadWebUIHttpsStatusIcons();
 #endif // DISABLE_WEBUI
+    void updateSidebarMetrics();
+    void loadUIThemeResources();
 
     // General options
     void initializeLanguageCombo();
@@ -214,5 +217,7 @@ private:
 
 #ifndef DISABLE_WEBUI
     QString m_currentAPIKey;
+    bool m_isWebUIHttpsCertValid = false;
+    bool m_isWebUIHttpsKeyValid = false;
 #endif
 };

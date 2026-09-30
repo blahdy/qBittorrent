@@ -44,6 +44,7 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
+#include <QFrame>
 #include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
@@ -136,6 +137,26 @@ namespace
     const QByteArray PYTHON_INSTALLER_SHA2_256 = QByteArrayLiteral("f4a7df6ab4fa375cd7296127ff6b9a14fbd1313f51864ce020185deba10144fa");
 #endif
 #endif // Q_OS_WIN
+
+#ifdef Q_OS_MACOS
+    void applySeparatorPalette(QWidget *separator, const QWidget *parent)
+    {
+        QPalette palette = separator->palette();
+        palette.setColor(QPalette::Window, parent->window()->palette().color(QPalette::Mid));
+        separator->setPalette(palette);
+    }
+
+    QWidget *createToolBarSeparator(QWidget *parent)
+    {
+        auto *separator = new QWidget(parent);
+        separator->setAutoFillBackground(true);
+        separator->setFixedWidth(1);
+        separator->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+        separator->setProperty("toolbarSeparator", true);
+        applySeparatorPalette(separator, parent);
+        return separator;
+    }
+#endif
 }
 
 MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, const QString &titleSuffix)
@@ -309,24 +330,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_queueSeparatorMenu = m_ui->menuEdit->insertSeparator(m_ui->actionTopQueuePos);
 
 #ifdef Q_OS_MACOS
-    for (QAction *action : asConst(m_ui->toolBar->actions()))
-    {
-        if (action->isSeparator())
-        {
-            auto *line = new QWidget(this);
-            line->setAutoFillBackground(true);
-            line->setFixedWidth(1);
-
-            QPalette pal = line->palette();
-            pal.setColor(QPalette::Window, palette().color(QPalette::Mid));
-            line->setPalette(pal);
-
-            QAction *widgetAction = m_ui->toolBar->insertWidget(action, line);
-            m_ui->toolBar->removeAction(action);
-            if (action == m_queueSeparator)
-                m_queueSeparator = widgetAction;
-        }
-    }
+    replaceToolBarSeparators();
 #endif // Q_OS_MACOS
 
     // Transfer list slots
@@ -465,6 +469,9 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
 #endif
     });
 
+    applyUITheme();
+    connect(UIThemeManager::instance(), &UIThemeManager::themeChanged, this, &MainWindow::applyUITheme);
+
 #ifdef Q_OS_MACOS
     if (initialState == WindowState::Normal)
     {
@@ -554,6 +561,20 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
 MainWindow::~MainWindow()
 {
     delete m_ui;
+}
+
+void MainWindow::applyUITheme()
+{
+#ifndef Q_OS_MACOS
+    setWindowIcon(UIThemeManager::instance()->getIcon(u"qbittorrent"_s));
+#else
+    for (QAction *action : asConst(m_ui->toolBar->actions()))
+    {
+        QWidget *const widget = m_ui->toolBar->widgetForAction(action);
+        if (widget && widget->property("toolbarSeparator").toBool())
+            applySeparatorPalette(widget, m_ui->toolBar);
+    }
+#endif
 }
 
 bool MainWindow::isExecutionLogEnabled() const
@@ -1393,7 +1414,7 @@ void MainWindow::showStatusBar(bool show)
     else if (!m_statusBar)
     {
         // Create status bar
-        m_statusBar = new StatusBar;
+        m_statusBar = new StatusBar(this);
         connect(m_statusBar.data(), &StatusBar::connectionButtonClicked, this, &MainWindow::showConnectionSettings);
         connect(m_statusBar.data(), &StatusBar::alternativeSpeedsButtonClicked, this, &MainWindow::toggleAlternativeSpeeds);
         setStatusBar(m_statusBar);
@@ -1803,6 +1824,23 @@ void MainWindow::on_actionExecutionLogs_triggered(bool checked)
     m_ui->actionCriticalMessages->setEnabled(checked);
     setExecutionLogEnabled(checked);
 }
+
+#ifdef Q_OS_MACOS
+void MainWindow::replaceToolBarSeparators()
+{
+    for (QAction *action : asConst(m_ui->toolBar->actions()))
+    {
+        if (!action->isSeparator())
+            continue;
+
+        auto *separator = createToolBarSeparator(m_ui->toolBar);
+        QAction *const widgetAction = m_ui->toolBar->insertWidget(action, separator);
+        m_ui->toolBar->removeAction(action);
+        if (action == m_queueSeparator)
+            m_queueSeparator = widgetAction;
+    }
+}
+#endif
 
 void MainWindow::on_actionNormalMessages_triggered(const bool checked)
 {

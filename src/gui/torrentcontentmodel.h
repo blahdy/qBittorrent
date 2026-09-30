@@ -100,6 +100,7 @@ private:
 
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
     QStringList mimeTypes() const override;
+    void onUIThemeChanged();
     void populate();
     TorrentContentModelFolder *populateFolder(const Path &folderPath, PopulateFolderFlags flags = None);
     void removeEmptyBranch(const Path &folderPath);

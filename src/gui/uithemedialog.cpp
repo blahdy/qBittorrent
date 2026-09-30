@@ -41,10 +41,12 @@
 #include "base/3rdparty/expected.hpp"
 #include "base/logger.h"
 #include "base/path.h"
+#include "base/preferences.h"
 #include "base/profile.h"
 #include "base/utils/fs.h"
 #include "base/utils/io.h"
 #include "uithemecommon.h"
+#include "uithememanager.h"
 #include "utils.h"
 
 #include "ui_uithemedialog.h"
@@ -259,6 +261,13 @@ void UIThemeDialog::accept()
         hasError = true;
     if (!storeIcons())
         hasError = true;
+
+    const Path editedThemeConfig = userConfigPath() / Path(CONFIG_FILE_NAME);
+    const auto *pref = Preferences::instance();
+    const bool shouldReapplyTheme = pref->useCustomUITheme()
+        && (pref->customUIThemePath() == editedThemeConfig);
+    if (shouldReapplyTheme)
+        UIThemeManager::instance()->applyThemeSettings();
 
     if (hasError)
     {
