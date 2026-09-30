@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         uses: nick-fields/retry@v4
         env:
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 0
           HOMEBREW_NO_INSTALL_CLEANUP: 1
         with:
           timeout_seconds: 90
