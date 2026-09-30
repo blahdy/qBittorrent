@@ -139,20 +139,6 @@ jobs:
         run: |
           set -euxo pipefail
 
-          # qBittorrent enables -Wold-style-cast for its own sources. Do not
-          # apply that warning to OpenSSL headers; instead, remove the warning
-          # from the qBittorrent compile options entirely for this CI build.
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path("cmake/Modules/CommonConfig.cmake")
-          text = path.read_text()
-          old = "        -Wold-style-cast\\n"
-          if old not in text:
-              raise SystemExit("Expected -Wold-style-cast entry was not found")
-          path.write_text(text.replace(old, ""))
-          PY
-
           cmake \
             -B build \
             -G "Ninja" \
