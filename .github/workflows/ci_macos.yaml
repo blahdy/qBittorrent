@@ -41,7 +41,7 @@ jobs:
           command: |
             brew update > /dev/null
             brew install \
-              cmake ninja zlib boost libtorrent
+              cmake ninja zlib boost libtorrent-rasterbar
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
