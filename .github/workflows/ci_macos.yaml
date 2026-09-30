@@ -49,7 +49,7 @@ jobs:
           command: |
             brew update > /dev/null
             brew cleanup
-            brew uninstall --ignore-dependencies openssl@4 openssl@3 ca-certificates
+            brew uninstall --ignore-dependencies openssl@3 ca-certificates
             rm -rf local/etc/openssl@3
             rm -rf local/etc/openssl@3/cert.pem
             rm -rf local/etc/openssl@3/certs
