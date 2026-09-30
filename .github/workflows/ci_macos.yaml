@@ -11,7 +11,7 @@ concurrency:
 jobs:
   ci:
     name: Build
-    runs-on: macos-26-intel
+    runs-on: macos-15-intel
     permissions:
       actions: write
 
@@ -41,18 +41,17 @@ jobs:
         uses: nick-fields/retry@v4
         env:
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 0
-          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 0
         with:
           timeout_seconds: 90
           retry_wait_seconds: 5
           max_attempts: 2
           command: |
             brew update > /dev/null
-            brew cleanup
             brew uninstall --ignore-dependencies openssl@1 openssl@2 openssl@3 ca-certificates
-            brew cleanup
             brew install \
               cmake ninja zlib ca-certificates
+            brew postinstall ca-certificates
             brew install openssl@4
             # preinstalled on the image: cmake ninja
 
