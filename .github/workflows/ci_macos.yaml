@@ -48,8 +48,9 @@ jobs:
           max_attempts: 2
           command: |
             brew update > /dev/null
+            brew cleanup
             brew uninstall --ignore-dependencies openssl@1 openssl@2 openssl@3 ca-certificates
-            brew install \
+            brew install -v \
               cmake ninja zlib ca-certificates
             brew postinstall -v ca-certificates
             brew install openssl@4
