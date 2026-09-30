@@ -49,7 +49,7 @@ jobs:
           command: |
             brew update > /dev/null
             brew cleanup
-            brew uninstall openssl@1 openssl@2 openssl@3 ca-certificates
+            brew uninstall --ignore-dependencies openssl@1 openssl@2 openssl@3 ca-certificates
             brew cleanup
             brew install \
               cmake ninja zlib ca-certificates
