@@ -48,8 +48,8 @@ jobs:
           max_attempts: 2
           command: |
             brew update > /dev/null
-            brew install \
-              cmake ninja zlib openssl@3
+#            brew install \
+#              cmake ninja zlib openssl@3
             # preinstalled on the image: cmake ninja
 
       - name: Setup ccache
