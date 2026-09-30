@@ -51,7 +51,7 @@ jobs:
             brew uninstall --ignore-dependencies openssl@1 openssl@2 openssl@3 ca-certificates
             brew install \
               cmake ninja zlib ca-certificates
-            brew postinstall ca-certificates
+            brew postinstall -v ca-certificates
             brew install openssl@4
             # preinstalled on the image: cmake ninja
 
