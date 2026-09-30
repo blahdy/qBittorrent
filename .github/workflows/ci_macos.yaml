@@ -48,9 +48,15 @@ jobs:
           max_attempts: 2
           command: |
             brew update > /dev/null
+            brew update
+            brew doctor
             brew install \
-              cmake ninja zlib ca-certificates openssl@4
+              cmake ninja zlib ca-certificates
+            brew postinstall ca-certificates
+            brew install openssl@4
             # preinstalled on the image: cmake ninja
+            brew doctor
+            brew postinstall -v ca-certificates
 
       - name: Setup ccache
         uses: Chocobo1/setup-ccache-action@v1
