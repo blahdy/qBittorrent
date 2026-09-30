@@ -44,12 +44,12 @@ jobs:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
         with:
           timeout_seconds: 90
-          retry_wait_seconds: 20
-          max_attempts: 6
+          retry_wait_seconds: 5
+          max_attempts: 2
           command: |
             brew update > /dev/null
             brew install \
-              openssl@3 zlib
+              cmake ninja zlib openssl@4
             # preinstalled on the image: cmake ninja
 
       - name: Setup ccache
@@ -99,7 +99,7 @@ jobs:
             -G "Ninja" \
             -DBUILD_SHARED_LIBS=OFF \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCMAKE_CXX_STANDARD=20 \
+            -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DBOOST_ROOT="${{ env.boost_path }}/lib/cmake" \
             -Ddeprecated-functions=OFF \
