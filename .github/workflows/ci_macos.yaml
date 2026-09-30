@@ -49,7 +49,24 @@ jobs:
           command: |
             brew update > /dev/null
             brew cleanup
-            brew uninstall --ignore-dependencies openssl@1 openssl@2 openssl@3 ca-certificates
+            brew uninstall --ignore-dependencies openssl@4 openssl@3 ca-certificates
+            rm -rf local/etc/openssl@3
+            rm -rf local/etc/openssl@3/cert.pem
+            rm -rf local/etc/openssl@3/certs
+            rm -rf local/etc/openssl@3/certs/.keepme
+            rm -rf local/etc/openssl@3/ct_log_list.cnf
+            rm -rf local/etc/openssl@3/ct_log_list.cnf.dist
+            rm -rf local/etc/openssl@3/misc
+            rm -rf local/etc/openssl@3/misc/CA.pl
+            rm -rf local/etc/openssl@3/misc/tsget
+            rm -rf local/etc/openssl@3/misc/tsget.pl
+            rm -rf local/etc/openssl@3/openssl.cnf
+            rm -rf local/etc/openssl@3/openssl.cnf.dist
+            rm -rf local/etc/openssl@3/private
+            rm -rf local/etc/openssl@3/private/.keepme
+            rm -rf local/etc/openssl@1.1
+            rm -rf local/etc/ca-certificates
+            rm -rf local/etc/ca-certificates/cert.pem
             brew install -v \
               cmake ninja zlib ca-certificates
             brew postinstall -v ca-certificates
