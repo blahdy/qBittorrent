@@ -11,7 +11,7 @@ concurrency:
 jobs:
   ci:
     name: Build
-    runs-on: macos-26-intel
+    runs-on: macos-15-intel
     permissions:
       actions: write
 
@@ -48,8 +48,8 @@ jobs:
           max_attempts: 2
           command: |
             brew update > /dev/null
-#            brew install \
-#              cmake ninja zlib openssl@3
+            brew install \
+              cmake ninja zlib openssl@4
             # preinstalled on the image: cmake ninja
 
       - name: Setup ccache
