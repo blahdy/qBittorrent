@@ -45,11 +45,11 @@ jobs:
         with:
           timeout_seconds: 90
           retry_wait_seconds: 5
-          max_attempts: 2
+          max_attempts: 1
           command: |
-            brew update > /dev/null
             brew cleanup
-            brew uninstall --ignore-dependencies openssl@3 ca-certificates
+            NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
+            NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
             rm -rf local/etc/openssl@3
             rm -rf local/etc/openssl@3/cert.pem
             rm -rf local/etc/openssl@3/certs
@@ -67,7 +67,6 @@ jobs:
             rm -rf local/etc/openssl@1.1
             rm -rf local/etc/ca-certificates
             rm -rf local/etc/ca-certificates/cert.pem
-            brew update
             brew install -v \
               cmake ninja zlib ca-certificates
             brew install openssl@4
