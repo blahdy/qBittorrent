@@ -112,19 +112,20 @@ let saveWindowSize = () => {};
 let loadWindowWidth = () => {};
 let loadWindowHeight = () => {};
 let showDownloadPage = () => {};
-let globalUploadLimitFN = () => {};
+let globalLimitFN = () => {};
 let uploadLimitFN = () => {};
 let shareRatioFN = () => {};
 let toggleSequentialDownloadFN = () => {};
 let toggleFirstLastPiecePrioFN = () => {};
 let setSuperSeedingFN = () => {};
 let setForceStartFN = () => {};
-let globalDownloadLimitFN = () => {};
 let StatisticsLinkFN = () => {};
 let downloadLimitFN = () => {};
 let deleteSelectedTorrentsFN = () => {};
 let stopFN = () => {};
 let startFN = () => {};
+let pauseSessionFN = () => {};
+let resumeSessionFN = () => {};
 let autoTorrentManagementFN = () => {};
 let recheckFN = () => {};
 let reannounceFN = () => {};
@@ -132,6 +133,7 @@ let setLocationFN = () => {};
 let renameFN = () => {};
 let renameFilesFN = () => {};
 let startVisibleTorrentsFN = () => {};
+let forceStartVisibleTorrentsFN = () => {};
 let stopVisibleTorrentsFN = () => {};
 let deleteVisibleTorrentsFN = () => {};
 let torrentNewCategoryFN = () => {};
@@ -215,7 +217,7 @@ const initializeWindows = () => {
             paddingVertical: 0,
             paddingHorizontal: 0,
             width: loadWindowWidth(id, 500),
-            height: loadWindowHeight(id, 300),
+            height: loadWindowHeight(id, 350),
             onResize: window.qBittorrent.Misc.createDebounceHandler(500, (e) => {
                 saveWindowSize(id);
             })
@@ -325,26 +327,20 @@ const initializeWindows = () => {
         });
     }
 
-    globalUploadLimitFN = () => {
-        const contentURL = new URL("speedlimit.html", window.location);
-        contentURL.search = new URLSearchParams({
-            v: "${CACHEID}",
-            hashes: "global",
-            type: "upload",
-        });
+    globalLimitFN = () => {
         new MochaUI.Window({
-            id: "uploadLimitPage",
+            id: "globalSpeedLimitsPage",
             icon: "images/qbittorrent-tray.svg",
-            title: "QBT_TR(Global Upload Speed Limit)QBT_TR[CONTEXT=MainWindow]",
-            loadMethod: "iframe",
-            contentURL: contentURL.toString(),
+            title: "QBT_TR(Global Speed Limits)QBT_TR[CONTEXT=MainWindow]",
+            loadMethod: "xhr",
+            contentURL: "views/globalspeedlimits.html?v=${CACHEID}",
             scrollbars: false,
             resizable: false,
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: window.qBittorrent.Dialog.limitWidthToViewport(424),
-            height: 100
+            width: window.qBittorrent.Dialog.limitWidthToViewport(480),
+            height: 245
         });
     };
 
@@ -475,29 +471,6 @@ const initializeWindows = () => {
         }
     };
 
-    globalDownloadLimitFN = () => {
-        const contentURL = new URL("speedlimit.html", window.location);
-        contentURL.search = new URLSearchParams({
-            v: "${CACHEID}",
-            hashes: "global",
-            type: "download",
-        });
-        new MochaUI.Window({
-            id: "downloadLimitPage",
-            icon: "images/qbittorrent-tray.svg",
-            title: "QBT_TR(Global Download Speed Limit)QBT_TR[CONTEXT=MainWindow]",
-            loadMethod: "iframe",
-            contentURL: contentURL.toString(),
-            scrollbars: false,
-            resizable: false,
-            maximizable: false,
-            paddingVertical: 0,
-            paddingHorizontal: 0,
-            width: window.qBittorrent.Dialog.limitWidthToViewport(424),
-            height: 100
-        });
-    };
-
     StatisticsLinkFN = () => {
         const id = "statisticspage";
         new MochaUI.Window({
@@ -621,6 +594,30 @@ const initializeWindows = () => {
             });
             updateMainData();
         }
+    };
+
+    pauseSessionFN = () => {
+        fetch("api/v2/transfer/pauseSession", {
+            method: "POST",
+        }).then((response) => {
+            if (!response.ok) {
+                alert("QBT_TR(Unable to pause the session.)QBT_TR[CONTEXT=HttpServer]");
+                return;
+            }
+            updateMainData();
+        });
+    };
+
+    resumeSessionFN = () => {
+        fetch("api/v2/transfer/resumeSession", {
+            method: "POST",
+        }).then((response) => {
+            if (!response.ok) {
+                alert("QBT_TR(Unable to resume the session.)QBT_TR[CONTEXT=HttpServer]");
+                return;
+            }
+            updateMainData();
+        });
     };
 
     autoTorrentManagementFN = () => {
@@ -808,6 +805,28 @@ const initializeWindows = () => {
         }
     };
 
+    forceStartVisibleTorrentsFN = () => {
+        const hashes = torrentsTable.getFilteredTorrentsHashes(selectedStatus, selectedCategory, selectedTag, selectedTracker);
+        if (hashes.length > 0) {
+            fetch("api/v2/torrents/setForceStart", {
+                    method: "POST",
+                    body: new URLSearchParams({
+                        hashes: hashes.join("|"),
+                        value: "true"
+                    })
+                })
+                .then((response) => {
+                    if (!response.ok) {
+                        alert("QBT_TR(Unable to force start torrents.)QBT_TR[CONTEXT=HttpServer]");
+                        return;
+                    }
+
+                    updateMainData();
+                    updatePropertiesPanel();
+                });
+        }
+    };
+
     stopVisibleTorrentsFN = () => {
         const hashes = torrentsTable.getFilteredTorrentsHashes(selectedStatus, selectedCategory, selectedTag, selectedTracker);
         if (hashes.length > 0) {
@@ -892,8 +911,8 @@ const initializeWindows = () => {
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
-            height: 200
+            width: window.qBittorrent.Dialog.limitWidthToViewport(500),
+            height: 400
         });
     };
 
@@ -934,8 +953,8 @@ const initializeWindows = () => {
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
-            height: 200
+            width: window.qBittorrent.Dialog.limitWidthToViewport(500),
+            height: 400
         });
     };
 
@@ -957,8 +976,8 @@ const initializeWindows = () => {
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
-            height: 200
+            width: window.qBittorrent.Dialog.limitWidthToViewport(500),
+            height: 400
         });
     };
 
@@ -980,8 +999,8 @@ const initializeWindows = () => {
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
-            height: 200
+            width: window.qBittorrent.Dialog.limitWidthToViewport(500),
+            height: 400
         });
     };
 
@@ -1283,6 +1302,34 @@ const initializeWindows = () => {
             });
             updateMainData();
         }
+    });
+
+    addClickEvent("pauseSession", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        pauseSessionFN();
+    });
+
+    addClickEvent("resumeSession", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        resumeSessionFN();
+    });
+
+    addClickEvent("selectAll", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        torrentsTable.selectAll();
+    });
+
+    addClickEvent("invertSelection", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        torrentsTable.selectInverse();
     });
 
     for (const item of ["stop", "start", "recheck"]) {

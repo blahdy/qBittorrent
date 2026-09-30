@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2015-2025  Vladimir Golovnev <glassez@yandex.ru>
+ * Copyright (C) 2015-2026  Vladimir Golovnev <glassez@yandex.ru>
  * Copyright (C) 2006  Christophe Dumez <chris@qbittorrent.org>
  *
  * This program is free software; you can redistribute it and/or
@@ -36,7 +36,6 @@
 
 #include "base/pathfwd.h"
 #include "base/tagset.h"
-#include "addtorrenterror.h"
 #include "addtorrentparams.h"
 #include "categoryoptions.h"
 #include "sharelimits.h"
@@ -168,10 +167,7 @@ namespace BitTorrent
         virtual Path categorySavePath(const QString &categoryName, const CategoryOptions &options) const = 0;
         virtual Path categoryDownloadPath(const QString &categoryName) const = 0;
         virtual Path categoryDownloadPath(const QString &categoryName, const CategoryOptions &options) const = 0;
-        virtual qreal categoryRatioLimit(const QString &categoryName) const = 0;
-        virtual int categorySeedingTimeLimit(const QString &categoryName) const = 0;
-        virtual int categoryInactiveSeedingTimeLimit(const QString &categoryName) const = 0;
-        virtual ShareLimitAction categoryShareLimitAction(const QString &categoryName) const = 0;
+        virtual ShareLimits categoryShareLimits(const QString &categoryName) const = 0;
         virtual bool addCategory(const QString &name, const CategoryOptions &options = {}) = 0;
         virtual bool removeCategory(const QString &name) = 0;
         virtual bool useCategoryPathsInManualMode() const = 0;
@@ -205,17 +201,13 @@ namespace BitTorrent
         virtual bool isDisableAutoTMMWhenCategorySavePathChanged() const = 0;
         virtual void setDisableAutoTMMWhenCategorySavePathChanged(bool value) = 0;
 
-        virtual qreal globalMaxRatio() const = 0;
-        virtual void setGlobalMaxRatio(qreal ratio) = 0;
-        virtual int globalMaxSeedingMinutes() const = 0;
-        virtual void setGlobalMaxSeedingMinutes(int minutes) = 0;
-        virtual int globalMaxInactiveSeedingMinutes() const = 0;
-        virtual void setGlobalMaxInactiveSeedingMinutes(int minutes) = 0;
-        virtual ShareLimitAction shareLimitAction() const = 0;
-        virtual void setShareLimitAction(ShareLimitAction act) = 0;
+        virtual const ShareLimits &shareLimits() const = 0;
+        virtual void setShareLimits(ShareLimits shareLimits) = 0;
 
         virtual QString getDHTBootstrapNodes() const = 0;
         virtual void setDHTBootstrapNodes(const QString &nodes) = 0;
+        virtual QString getWebTorrentSTUNServer() const = 0;
+        virtual void setWebTorrentSTUNServer(const QString &server) = 0;
         virtual bool isDHTEnabled() const = 0;
         virtual void setDHTEnabled(bool enabled) = 0;
         virtual bool isLSDEnabled() const = 0;
@@ -240,10 +232,17 @@ namespace BitTorrent
         virtual void setRefreshInterval(int value) = 0;
         virtual bool isPreallocationEnabled() const = 0;
         virtual void setPreallocationEnabled(bool enabled) = 0;
-        virtual Path torrentExportDirectory() const = 0;
-        virtual void setTorrentExportDirectory(const Path &path) = 0;
-        virtual Path finishedTorrentExportDirectory() const = 0;
-        virtual void setFinishedTorrentExportDirectory(const Path &path) = 0;
+
+        virtual bool isTorrentFileBackupEnabled() const = 0;
+        virtual void setTorrentFileBackupEnabled(bool enabled) = 0;
+        virtual Path torrentBackupDirectory() const = 0;
+        virtual void setTorrentBackupDirectory(const Path &path) = 0;
+        virtual bool isFinishedTorrentBackupDirectoryEnabled() const = 0;
+        virtual void setFinishedTorrentBackupDirectoryEnabled(bool enabled) = 0;
+        virtual Path finishedTorrentBackupDirectory() const = 0;
+        virtual void setFinishedTorrentBackupDirectory(const Path &path) = 0;
+        virtual bool removeTorrentFileBackup() const = 0;
+        virtual void setRemoveTorrentFileBackup(bool remove) = 0;
 
         virtual bool isAddTrackersFromURLEnabled() const = 0;
         virtual void setAddTrackersFromURLEnabled(bool enabled) = 0;
@@ -300,6 +299,8 @@ namespace BitTorrent
         virtual void setI2PPort(int port) = 0;
         virtual bool I2PMixedMode() const = 0;
         virtual void setI2PMixedMode(bool enabled) = 0;
+        virtual bool isI2PPeXEnabled() const = 0;
+        virtual void setI2PPeXEnabled(bool enabled) = 0;
         virtual int I2PInboundQuantity() const = 0;
         virtual void setI2PInboundQuantity(int value) = 0;
         virtual int I2POutboundQuantity() const = 0;
@@ -308,6 +309,10 @@ namespace BitTorrent
         virtual void setI2PInboundLength(int value) = 0;
         virtual int I2POutboundLength() const = 0;
         virtual void setI2POutboundLength(int value) = 0;
+        virtual int I2PInboundLengthVariance() const = 0;
+        virtual void setI2PInboundLengthVariance(int value) = 0;
+        virtual int I2POutboundLengthVariance() const = 0;
+        virtual void setI2POutboundLengthVariance(int value) = 0;
         virtual bool isProxyPeerConnectionsEnabled() const = 0;
         virtual void setProxyPeerConnectionsEnabled(bool enabled) = 0;
         virtual ChokingAlgorithm chokingAlgorithm() const = 0;
@@ -334,6 +339,8 @@ namespace BitTorrent
         virtual void setPeerTurnoverInterval(int val) = 0;
         virtual int requestQueueSize() const = 0;
         virtual void setRequestQueueSize(int val) = 0;
+        virtual int maxOutstandingBlockRequests() const = 0;
+        virtual void setMaxOutstandingBlockRequests(int val) = 0;
         virtual int asyncIOThreads() const = 0;
         virtual void setAsyncIOThreads(int num) = 0;
         virtual int hashingThreads() const = 0;
@@ -368,6 +375,8 @@ namespace BitTorrent
         virtual void setSendBufferWatermarkFactor(int value) = 0;
         virtual int connectionSpeed() const = 0;
         virtual void setConnectionSpeed(int value) = 0;
+        virtual bool isSeedingOutgoingConnectionsEnabled() const = 0;
+        virtual void setSeedingOutgoingConnections(bool enabled) = 0;
         virtual int socketSendBufferSize() const = 0;
         virtual void setSocketSendBufferSize(int value) = 0;
         virtual int socketReceiveBufferSize() const = 0;
@@ -435,6 +444,8 @@ namespace BitTorrent
         virtual void setIDNSupportEnabled(bool enabled) = 0;
         virtual bool multiConnectionsPerIpEnabled() const = 0;
         virtual void setMultiConnectionsPerIpEnabled(bool enabled) = 0;
+        virtual bool multiConnectionsPerPeerIDEnabled() const = 0;
+        virtual void setMultiConnectionsPerPeerIDEnabled(bool enabled) = 0;
         virtual bool validateHTTPSTrackerCertificate() const = 0;
         virtual void setValidateHTTPSTrackerCertificate(bool enabled) = 0;
         virtual bool isSSRFMitigationEnabled() const = 0;
@@ -493,12 +504,11 @@ namespace BitTorrent
 
     signals:
         void startupProgressUpdated(int progress);
-        void addTorrentFailed(const InfoHash &infoHash, const AddTorrentError &reason);
+        void addTorrentFailed(const InfoHash &infoHash, const QString &reason);
         void allTorrentsFinished();
         void categoryAdded(const QString &categoryName);
         void categoryRemoved(const QString &categoryName);
         void categoryOptionsChanged(const QString &categoryName);
-        void fullDiskError(Torrent *torrent, const QString &msg);
         void IPFilterParsed(bool error, int ruleCount);
         void metadataDownloaded(const TorrentInfo &info);
         void restored();
@@ -509,8 +519,13 @@ namespace BitTorrent
         void subcategoriesSupportChanged();
         void tagAdded(const Tag &tag);
         void tagRemoved(const Tag &tag);
+        void torrentsLoaded(const QList<Torrent *> &torrents);
+        void torrentsUpdated(const QList<Torrent *> &torrents);
+        void freeDiskSpaceChecked(qint64 result);
+
         void torrentAboutToBeRemoved(Torrent *torrent);
         void torrentAdded(Torrent *torrent);
+        void duplicateTorrentDetected(const InfoHash &infoHash, Torrent *torrent, const QString &message);
         void torrentCategoryChanged(Torrent *torrent, const QString &oldCategory);
         void torrentFinished(Torrent *torrent);
         void torrentFinishedChecking(Torrent *torrent);
@@ -519,17 +534,20 @@ namespace BitTorrent
         void torrentStarted(Torrent *torrent);
         void torrentSavePathChanged(Torrent *torrent);
         void torrentSavingModeChanged(Torrent *torrent);
-        void torrentsLoaded(const QList<Torrent *> &torrents);
-        void torrentsUpdated(const QList<Torrent *> &torrents);
         void torrentTagAdded(Torrent *torrent, const Tag &tag);
         void torrentTagRemoved(Torrent *torrent, const Tag &tag);
-        void trackerError(Torrent *torrent, const QString &tracker);
+        void torrentContentFileRenamed(Torrent *torrent, int index, const Path &oldFilePath);
+        void torrentContentFolderRenamed(Torrent *torrent, const Path &newFolderPath
+                , const Path &oldFolderPath, const QHash<int, Path> &renamedFiles);
+        void torrentContentFolderRenamingFailed(Torrent *torrent, const Path &newFolderPath, const Path &oldFolderPath
+                , const QHash<int, Path> &renamedFiles, const QList<int> &failedFileIndexes);
+        void torrentIOError(Torrent *torrent, const QString &message);
         void trackersAdded(Torrent *torrent, const QList<TrackerEntry> &trackers);
         void trackersReset(Torrent *torrent, const QList<TrackerEntryStatus> &oldEntries, const QList<TrackerEntry> &newEntries);
         void trackersRemoved(Torrent *torrent, const QStringList &trackers);
         void trackerSuccess(Torrent *torrent, const QString &tracker);
         void trackerWarning(Torrent *torrent, const QString &tracker);
+        void trackerError(Torrent *torrent, const QString &tracker);
         void trackerEntryStatusesUpdated(Torrent *torrent, const QHash<QString, TrackerEntryStatus> &updatedTrackers);
-        void freeDiskSpaceChecked(qint64 result);
     };
 }

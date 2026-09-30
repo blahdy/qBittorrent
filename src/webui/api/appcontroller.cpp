@@ -1,7 +1,7 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
+ * Copyright (C) 2018-2026  Vladimir Golovnev <glassez@yandex.ru>
  * Copyright (C) 2024  Jonathan Ketchker
- * Copyright (C) 2018  Vladimir Golovnev <glassez@yandex.ru>
  * Copyright (C) 2006-2012  Christophe Dumez <chris@qbittorrent.org>
  * Copyright (C) 2006-2012  Ishan Arora <ishan@qbittorrent.org>
  *
@@ -46,7 +46,6 @@
 #include <QRegularExpression>
 #include <QStringList>
 #include <QTimer>
-#include <QTranslator>
 
 #include "base/bittorrent/session.h"
 #include "base/global.h"
@@ -54,6 +53,7 @@
 #include "base/net/downloadmanager.h"
 #include "base/net/portforwarder.h"
 #include "base/net/proxyconfigurationmanager.h"
+#include "base/net/smtpencryptiontype.h"
 #include "base/path.h"
 #include "base/preferences.h"
 #include "base/rss/rss_autodownloader.h"
@@ -156,6 +156,9 @@ void AppController::preferencesAction()
     data[u"status_bar_external_ip"_s] = pref->isStatusbarExternalIPDisplayed();
     // Transfer List
     data[u"confirm_torrent_deletion"_s] = pref->confirmTorrentDeletion();
+    // Search
+    data[u"store_search_jobs"_s] = pref->storeSearchJobs();
+    data[u"store_search_job_results"_s] = pref->storeSearchJobResults();
     // Log file
     data[u"file_log_enabled"_s] = app()->isFileLoggerEnabled();
     data[u"file_log_path"_s] = app()->fileLoggerPath().toString();
@@ -187,8 +190,12 @@ void AppController::preferencesAction()
     data[u"temp_path_enabled"_s] = session->isDownloadPathEnabled();
     data[u"temp_path"_s] = session->downloadPath().toString();
     data[u"use_category_paths_in_manual_mode"_s] = session->useCategoryPathsInManualMode();
-    data[u"export_dir"_s] = session->torrentExportDirectory().toString();
-    data[u"export_dir_fin"_s] = session->finishedTorrentExportDirectory().toString();
+    // .torrent files backup management
+    data[u"torrent_files_backup_enabled"_s] = session->isTorrentFileBackupEnabled();
+    data[u"torrent_files_backup_dir"_s] = session->torrentBackupDirectory().toString();
+    data[u"torrent_files_finished_backup_dir_enabled"_s] = session->isFinishedTorrentBackupDirectoryEnabled();
+    data[u"torrent_files_finished_backup_dir"_s] = session->finishedTorrentBackupDirectory().toString();
+    data[u"remove_torrent_file_backup"_s] = session->removeTorrentFileBackup();
 
     // TODO: The following code is deprecated. Delete it once replaced by updated API method.
     // === BEGIN DEPRECATED CODE === //
@@ -218,7 +225,7 @@ void AppController::preferencesAction()
     data[u"mail_notification_sender"_s] = pref->getMailNotificationSender();
     data[u"mail_notification_email"_s] = pref->getMailNotificationEmail();
     data[u"mail_notification_smtp"_s] = pref->getMailNotificationSMTP();
-    data[u"mail_notification_ssl_enabled"_s] = pref->getMailNotificationSMTPSSL();
+    data[u"mail_notification_encryption_type"_s] = Utils::String::fromEnum(pref->getMailNotificationSMTPEncryptionType());
     data[u"mail_notification_auth_enabled"_s] = pref->getMailNotificationSMTPAuth();
     data[u"mail_notification_username"_s] = pref->getMailNotificationSMTPUsername();
     data[u"mail_notification_password"_s] = pref->getMailNotificationSMTPPassword();
@@ -247,10 +254,13 @@ void AppController::preferencesAction()
     data[u"i2p_address"_s] = session->I2PAddress();
     data[u"i2p_port"_s] = session->I2PPort();
     data[u"i2p_mixed_mode"_s] = session->I2PMixedMode();
+    data[u"i2p_pex_enabled"_s] = session->isI2PPeXEnabled();
     data[u"i2p_inbound_quantity"_s] = session->I2PInboundQuantity();
     data[u"i2p_outbound_quantity"_s] = session->I2POutboundQuantity();
     data[u"i2p_inbound_length"_s] = session->I2PInboundLength();
     data[u"i2p_outbound_length"_s] = session->I2POutboundLength();
+    data[u"i2p_inbound_length_variance"_s] = session->I2PInboundLengthVariance();
+    data[u"i2p_outbound_length_variance"_s] = session->I2POutboundLengthVariance();
 
     // Proxy Server
     const auto *proxyManager = Net::ProxyConfigurationManager::instance();
@@ -313,13 +323,15 @@ void AppController::preferencesAction()
     data[u"slow_torrent_ul_rate_threshold"_s] = session->uploadRateForSlowTorrents();
     data[u"slow_torrent_inactive_timer"_s] = session->slowTorrentsInactivityTimer();
     // Share Ratio Limiting
-    data[u"max_ratio_enabled"_s] = (session->globalMaxRatio() >= 0.);
-    data[u"max_ratio"_s] = session->globalMaxRatio();
-    data[u"max_seeding_time_enabled"_s] = (session->globalMaxSeedingMinutes() >= 0.);
-    data[u"max_seeding_time"_s] = session->globalMaxSeedingMinutes();
-    data[u"max_inactive_seeding_time_enabled"_s] = (session->globalMaxInactiveSeedingMinutes() >= 0.);
-    data[u"max_inactive_seeding_time"_s] = session->globalMaxInactiveSeedingMinutes();
-    data[u"max_ratio_act"_s] = static_cast<int>(session->shareLimitAction());
+    const BitTorrent::ShareLimits &shareLimits = session->shareLimits();
+    data[u"max_ratio_enabled"_s] = (shareLimits.ratioLimit >= 0.);
+    data[u"max_ratio"_s] = shareLimits.ratioLimit;
+    data[u"max_seeding_time_enabled"_s] = (shareLimits.seedingTimeLimit >= 0);
+    data[u"max_seeding_time"_s] = shareLimits.seedingTimeLimit;
+    data[u"max_inactive_seeding_time_enabled"_s] = (shareLimits.inactiveSeedingTimeLimit >= 0);
+    data[u"max_inactive_seeding_time"_s] = shareLimits.inactiveSeedingTimeLimit;
+    data[u"share_limits_mode"_s] = Utils::String::fromEnum(shareLimits.mode);
+    data[u"max_ratio_act"_s] = static_cast<int>(shareLimits.action);
     // Add trackers
     data[u"add_trackers_enabled"_s] = session->isAddTrackersEnabled();
     data[u"add_trackers"_s] = session->additionalTrackers();
@@ -347,6 +359,7 @@ void AppController::preferencesAction()
     data[u"web_ui_max_auth_fail_count"_s] = pref->getWebUIMaxAuthFailCount();
     data[u"web_ui_ban_duration"_s] = static_cast<int>(pref->getWebUIBanDuration().count());
     data[u"web_ui_session_timeout"_s] = pref->getWebUISessionTimeout();
+    data[u"web_ui_sessions_count_limit"_s] = pref->getWebUISessionsCountLimit();
     // API key
     data[u"web_ui_api_key"_s] = pref->getWebUIApiKey();
     // Use alternative WebUI
@@ -423,6 +436,10 @@ void AppController::preferencesAction()
     data[u"ignore_ssl_errors"_s] = pref->isIgnoreSSLErrors();
     // Python executable path
     data[u"python_executable_path"_s] = pref->getPythonExecutablePath().toString();
+    // Start Session paused
+    data[u"start_paused"_s] = session->isStartPaused();
+    // Session shutdown timeout
+    data[u"shutdown_timeout"_s] = session->shutdownTimeout();
 
     // libtorrent preferences
     // Bdecode depth limit
@@ -460,6 +477,8 @@ void AppController::preferencesAction()
     data[u"send_buffer_watermark_factor"_s] = session->sendBufferWatermarkFactor();
     // Outgoing connections per second
     data[u"connection_speed"_s] = session->connectionSpeed();
+    // Allow outgoing connections when seeding
+    data[u"seeding_outgoing_connections"_s] = session->isSeedingOutgoingConnectionsEnabled();
     // Socket send buffer size
     data[u"socket_send_buffer_size"_s] = session->socketSendBufferSize();
     // Socket receive buffer size
@@ -481,6 +500,8 @@ void AppController::preferencesAction()
     data[u"idn_support_enabled"_s] = session->isIDNSupportEnabled();
     // Multiple connections per IP
     data[u"enable_multi_connections_from_same_ip"_s] = session->multiConnectionsPerIpEnabled();
+    // Multiple connections per Peer ID
+    data[u"enable_multi_connections_from_same_peer_id"_s] = session->multiConnectionsPerPeerIDEnabled();
     // Validate HTTPS tracker certificate
     data[u"validate_https_tracker_certificate"_s] = session->validateHTTPSTrackerCertificate();
     // SSRF mitigation
@@ -504,8 +525,12 @@ void AppController::preferencesAction()
     data[u"peer_turnover_interval"_s] = session->peerTurnoverInterval();
     // Maximum outstanding requests to a single peer
     data[u"request_queue_size"_s] = session->requestQueueSize();
+    // Maximum outstanding requests from a single peer
+    data[u"max_outstanding_block_requests"_s] = session->maxOutstandingBlockRequests();
     // DHT bootstrap nodes
     data[u"dht_bootstrap_nodes"_s] = session->getDHTBootstrapNodes();
+    // STUN server for WebTorrent NAT traversal
+    data[u"webtorrent_stun_server"_s] = session->getWebTorrentSTUNServer();
 
     setResult(data);
 }
@@ -529,21 +554,10 @@ void AppController::setPreferencesAction()
     // Language
     if (hasKey(u"locale"_s))
     {
-        QString locale = it.value().toString();
-        if (pref->getLocale() != locale)
+        if (const QString locale = it.value().toString(); locale != pref->getLocale())
         {
-            auto *translator = new QTranslator;
-            if (translator->load(u":/lang/qbittorrent_"_s + locale))
-            {
-                qDebug("%s locale recognized, using translation.", qUtf8Printable(locale));
-            }
-            else
-            {
-                qDebug("%s locale unrecognized, using default (en).", qUtf8Printable(locale));
-            }
-            qApp->installTranslator(translator);
-
             pref->setLocale(locale);
+            app()->loadTranslation(locale);
         }
     }
     if (hasKey(u"status_bar_external_ip"_s))
@@ -553,6 +567,11 @@ void AppController::setPreferencesAction()
     // Transfer List
     if (hasKey(u"confirm_torrent_deletion"_s))
         pref->setConfirmTorrentDeletion(it.value().toBool());
+    // Search
+    if (hasKey(u"store_search_jobs"_s))
+        pref->setStoreSearchJobs(it.value().toBool());
+    if (hasKey(u"store_search_job_results"_s))
+        pref->setStoreSearchJobResults(it.value().toBool());
     // Log file
     if (hasKey(u"file_log_enabled"_s))
         app()->setFileLoggerEnabled(it.value().toBool());
@@ -611,10 +630,18 @@ void AppController::setPreferencesAction()
         session->setDownloadPath(Path(it.value().toString()));
     if (hasKey(u"use_category_paths_in_manual_mode"_s))
         session->setUseCategoryPathsInManualMode(it.value().toBool());
-    if (hasKey(u"export_dir"_s))
-        session->setTorrentExportDirectory(Path(it.value().toString()));
-    if (hasKey(u"export_dir_fin"_s))
-        session->setFinishedTorrentExportDirectory(Path(it.value().toString()));
+
+    // .torrent files backup management
+    if (hasKey(u"torrent_files_backup_enabled"_s))
+        session->setTorrentFileBackupEnabled(it.value().toBool());
+    if (hasKey(u"torrent_files_backup_dir"_s))
+        session->setTorrentBackupDirectory(Path(it.value().toString()));
+    if (hasKey(u"torrent_files_finished_backup_dir_enabled"_s))
+        session->setFinishedTorrentBackupDirectoryEnabled(it.value().toBool());
+    if (hasKey(u"torrent_files_finished_backup_dir"_s))
+        session->setFinishedTorrentBackupDirectory(Path(it.value().toString()));
+    if (hasKey(u"remove_torrent_file_backup"_s))
+        session->setRemoveTorrentFileBackup(it.value().toBool());
 
     // TODO: The following code is deprecated. Delete it once replaced by updated API method.
     // === BEGIN DEPRECATED CODE === //
@@ -681,8 +708,8 @@ void AppController::setPreferencesAction()
         pref->setMailNotificationEmail(it.value().toString());
     if (hasKey(u"mail_notification_smtp"_s))
         pref->setMailNotificationSMTP(it.value().toString());
-    if (hasKey(u"mail_notification_ssl_enabled"_s))
-        pref->setMailNotificationSMTPSSL(it.value().toBool());
+    if (hasKey(u"mail_notification_encryption_type"_s))
+        pref->setMailNotificationSMTPEncryptionType(Utils::String::toEnum(it.value().toString(), Net::SMTPEncryptionType::SMTPS));
     if (hasKey(u"mail_notification_auth_enabled"_s))
         pref->setMailNotificationSMTPAuth(it.value().toBool());
     if (hasKey(u"mail_notification_username"_s))
@@ -736,6 +763,8 @@ void AppController::setPreferencesAction()
         session->setI2PPort(it.value().toInt());
     if (hasKey(u"i2p_mixed_mode"_s))
         session->setI2PMixedMode(it.value().toBool());
+    if (hasKey(u"i2p_pex_enabled"_s))
+        session->setI2PPeXEnabled(it.value().toBool());
     if (hasKey(u"i2p_inbound_quantity"_s))
         session->setI2PInboundQuantity(it.value().toInt());
     if (hasKey(u"i2p_outbound_quantity"_s))
@@ -744,6 +773,10 @@ void AppController::setPreferencesAction()
         session->setI2PInboundLength(it.value().toInt());
     if (hasKey(u"i2p_outbound_length"_s))
         session->setI2POutboundLength(it.value().toInt());
+    if (hasKey(u"i2p_inbound_length_variance"_s))
+        session->setI2PInboundLengthVariance(it.value().toInt());
+    if (hasKey(u"i2p_outbound_length_variance"_s))
+        session->setI2POutboundLengthVariance(it.value().toInt());
 
     // Proxy Server
     auto *proxyManager = Net::ProxyConfigurationManager::instance();
@@ -846,37 +879,41 @@ void AppController::setPreferencesAction()
     if (hasKey(u"slow_torrent_inactive_timer"_s))
         session->setSlowTorrentsInactivityTimer(it.value().toInt());
     // Share Ratio Limiting
+    BitTorrent::ShareLimits shareLimits = session->shareLimits();
     if (hasKey(u"max_ratio_enabled"_s) && !it.value().toBool())
-        session->setGlobalMaxRatio(-1);
+        shareLimits.ratioLimit = BitTorrent::NO_RATIO_LIMIT;
     else if (hasKey(u"max_ratio"_s))
-        session->setGlobalMaxRatio(it.value().toReal());
+        shareLimits.ratioLimit = it.value().toReal();
     if (hasKey(u"max_seeding_time_enabled"_s) && !it.value().toBool())
-        session->setGlobalMaxSeedingMinutes(-1);
+        shareLimits.seedingTimeLimit = BitTorrent::NO_SEEDING_TIME_LIMIT;
     else if (hasKey(u"max_seeding_time"_s))
-        session->setGlobalMaxSeedingMinutes(it.value().toInt());
+        shareLimits.seedingTimeLimit = it.value().toInt();
     if (hasKey(u"max_inactive_seeding_time_enabled"_s) && !it.value().toBool())
-        session->setGlobalMaxInactiveSeedingMinutes(-1);
+        shareLimits.inactiveSeedingTimeLimit = BitTorrent::NO_SEEDING_TIME_LIMIT;
     else if (hasKey(u"max_inactive_seeding_time"_s))
-        session->setGlobalMaxInactiveSeedingMinutes(it.value().toInt());
+        shareLimits.inactiveSeedingTimeLimit = it.value().toInt();
+    if (hasKey(u"share_limits_mode"_s))
+        shareLimits.mode = Utils::String::toEnum(it.value().toString(), BitTorrent::ShareLimitsMode::MatchAny);
     if (hasKey(u"max_ratio_act"_s))
     {
         switch (it.value().toInt())
         {
         default:
         case 0:
-            session->setShareLimitAction(BitTorrent::ShareLimitAction::Stop);
+            shareLimits.action = BitTorrent::ShareLimitAction::Stop;
             break;
         case 1:
-            session->setShareLimitAction(BitTorrent::ShareLimitAction::Remove);
+            shareLimits.action = BitTorrent::ShareLimitAction::Remove;
             break;
         case 2:
-            session->setShareLimitAction(BitTorrent::ShareLimitAction::EnableSuperSeeding);
+            shareLimits.action = BitTorrent::ShareLimitAction::EnableSuperSeeding;
             break;
         case 3:
-            session->setShareLimitAction(BitTorrent::ShareLimitAction::RemoveWithContent);
+            shareLimits.action = BitTorrent::ShareLimitAction::RemoveWithContent;
             break;
         }
     }
+    session->setShareLimits(std::move(shareLimits));
     // Add trackers
     if (hasKey(u"add_trackers_enabled"_s))
         session->setAddTrackersEnabled(it.value().toBool());
@@ -935,6 +972,8 @@ void AppController::setPreferencesAction()
         pref->setWebUIBanDuration(std::chrono::seconds {it.value().toInt()});
     if (hasKey(u"web_ui_session_timeout"_s))
         pref->setWebUISessionTimeout(it.value().toInt());
+    if (hasKey(u"web_ui_sessions_count_limit"_s))
+        pref->setWebUISessionsCountLimit(it.value().toInt());
     // Use alternative WebUI
     if (hasKey(u"alternative_webui_enabled"_s))
         pref->setAltWebUIEnabled(it.value().toBool());
@@ -1065,6 +1104,18 @@ void AppController::setPreferencesAction()
     // Python executable path
     if (hasKey(u"python_executable_path"_s))
         pref->setPythonExecutablePath(Path(it.value().toString()));
+    // Start session paused
+    if (hasKey(u"start_paused"_s))
+        session->setStartPaused(it.value().toBool());
+    // Session shutdown timeout
+    if (hasKey(u"shutdown_timeout"_s))
+    {
+        // validate shutdown timeout, range -1 to INT_MAX
+        bool ok = false;
+        const int timeout = it.value().toInt(&ok);
+        if (ok && (timeout >= -1))
+            session->setShutdownTimeout(timeout);
+    }
 
     // libtorrent preferences
     // Bdecode depth limit
@@ -1121,6 +1172,9 @@ void AppController::setPreferencesAction()
     // Outgoing connections per second
     if (hasKey(u"connection_speed"_s))
         session->setConnectionSpeed(it.value().toInt());
+    // Allow outgoing connections when seeding
+    if (hasKey(u"seeding_outgoing_connections"_s))
+        session->setSeedingOutgoingConnections(it.value().toBool());
     // Socket send buffer size
     if (hasKey(u"socket_send_buffer_size"_s))
         session->setSocketSendBufferSize(it.value().toInt());
@@ -1153,6 +1207,9 @@ void AppController::setPreferencesAction()
     // Multiple connections per IP
     if (hasKey(u"enable_multi_connections_from_same_ip"_s))
         session->setMultiConnectionsPerIpEnabled(it.value().toBool());
+    // Multiple connections per Peer ID
+    if (hasKey(u"enable_multi_connections_from_same_peer_id"_s))
+        session->setMultiConnectionsPerPeerIDEnabled(it.value().toBool());
     // Validate HTTPS tracker certificate
     if (hasKey(u"validate_https_tracker_certificate"_s))
         session->setValidateHTTPSTrackerCertificate(it.value().toBool());
@@ -1194,9 +1251,15 @@ void AppController::setPreferencesAction()
     // Maximum outstanding requests to a single peer
     if (hasKey(u"request_queue_size"_s))
         session->setRequestQueueSize(it.value().toInt());
+    // Maximum outstanding requests from a single peer
+    if (hasKey(u"max_outstanding_block_requests"_s))
+        session->setMaxOutstandingBlockRequests(it.value().toInt());
     // DHT bootstrap nodes
     if (hasKey(u"dht_bootstrap_nodes"_s))
         session->setDHTBootstrapNodes(it.value().toString());
+    // STUN server for WebTorrent NAT traversal
+    if (hasKey(u"webtorrent_stun_server"_s))
+        session->setWebTorrentSTUNServer(it.value().toString());
 
     // Save preferences
     pref->apply();

@@ -126,6 +126,15 @@
         background-image: url('images/edit-clear.svg');
     }
 
+    #rulesFileButtons {
+        display: flex;
+        gap: 4px;
+    }
+
+    #rulesFileButtons button {
+        flex: 1;
+    }
+
 </style>
 
 <div id="RssDownloader" class="RssDownloader">
@@ -138,16 +147,21 @@
             <button type="button" id="newRuleButton" aria-label="QBT_TR(Add rule)QBT_TR[CONTEXT=AutomatedRssDownloader]" class="imageButton" onclick="qBittorrent.RssDownloader.addRule()"></button>
             <button type="button" id="deleteRuleButton" aria-label="QBT_TR(Remove rule)QBT_TR[CONTEXT=AutomatedRssDownloader]" class="imageButton" onclick="qBittorrent.RssDownloader.removeSelectedRule()"></button>
         </div>
+        <div id="rulesFileButtons">
+            <button type="button" onclick="qBittorrent.RssDownloader.exportRules()">QBT_TR(Export)QBT_TR[CONTEXT=AutomatedRssDownloader]</button>
+            <button type="button" onclick="qBittorrent.RssDownloader.importRules()">QBT_TR(Import)QBT_TR[CONTEXT=AutomatedRssDownloader]</button>
+            <input type="file" id="rssRulesFileInput" accept=".json" hidden>
+        </div>
         <div id="rulesTable">
             <div id="rulesSelectionCheckBoxList">
-                <div id="rssDownloaderRuleFixedHeaderDiv" class="dynamicTableFixedHeaderDiv invisible">
-                    <table class="dynamicTable unselectable">
-                        <thead>
-                            <tr class="dynamicTableHeader"></tr>
-                        </thead>
-                    </table>
-                </div>
                 <div id="rssDownloaderRuleTableDiv" class="dynamicTableDiv">
+                    <div id="rssDownloaderRuleFixedHeaderDiv" class="dynamicTableFixedHeaderDiv invisible">
+                        <table class="dynamicTable unselectable">
+                            <thead>
+                                <tr class="dynamicTableHeader"></tr>
+                            </thead>
+                        </table>
+                    </div>
                     <table class="dynamicTable unselectable">
                         <tbody></tbody>
                     </table>
@@ -285,14 +299,14 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
         <fieldset class="settings" id="rssDownloaderFeeds">
             <legend>QBT_TR(Apply Rule to Feeds:)QBT_TR[CONTEXT=AutomatedRssDownloader]</legend>
             <div id="rssDownloaderFeedsTable">
-                <div id="rssDownloaderFeedSelectionFixedHeaderDiv" class="dynamicTableFixedHeaderDiv invisible">
-                    <table class="dynamicTable unselectable">
-                        <thead>
-                            <tr class="dynamicTableHeader"></tr>
-                        </thead>
-                    </table>
-                </div>
                 <div id="rssDownloaderFeedSelectionTableDiv" class="dynamicTableDiv">
+                    <div id="rssDownloaderFeedSelectionFixedHeaderDiv" class="dynamicTableFixedHeaderDiv invisible">
+                        <table class="dynamicTable unselectable">
+                            <thead>
+                                <tr class="dynamicTableHeader"></tr>
+                            </thead>
+                        </table>
+                    </div>
                     <table class="dynamicTable unselectable">
                         <tbody></tbody>
                     </table>
@@ -306,14 +320,14 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
     <div id="rightRssDownloaderColumn">
         <b id="articleTableDesc">QBT_TR(Matching RSS Articles)QBT_TR[CONTEXT=AutomatedRssDownloader]</b>
         <div id="rssDownloaderArticlesTable">
-            <div id="rssDownloaderArticlesFixedHeaderDiv" class="dynamicTableFixedHeaderDiv invisible">
-                <table class="dynamicTable unselectable">
-                    <thead>
-                        <tr class="dynamicTableHeader"></tr>
-                    </thead>
-                </table>
-            </div>
             <div id="rssDownloaderArticlesTableDiv" class="dynamicTableDiv">
+                <div id="rssDownloaderArticlesFixedHeaderDiv" class="dynamicTableFixedHeaderDiv invisible">
+                    <table class="dynamicTable unselectable">
+                        <thead>
+                            <tr class="dynamicTableHeader"></tr>
+                        </thead>
+                    </table>
+                </div>
                 <table class="dynamicTable unselectable">
                     <tbody></tbody>
                 </table>
@@ -326,6 +340,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
     <li><a href="#addRule"><img src="images/list-add.svg" alt="QBT_TR(Add new rule...)QBT_TR[CONTEXT=AutomatedRssDownloader]"> QBT_TR(Add new rule...)QBT_TR[CONTEXT=AutomatedRssDownloader]</a></li>
     <li><a href="#deleteRule"><img src="images/edit-clear.svg" alt="QBT_TR(Delete rule)QBT_TR[CONTEXT=AutomatedRssDownloader]"> QBT_TR(Delete rule)QBT_TR[CONTEXT=AutomatedRssDownloader]</a></li>
     <li class="separator"><a href="#renameRule"><img src="images/edit-rename.svg" alt="QBT_TR(Rename rule...)QBT_TR[CONTEXT=AutomatedRssDownloader]"> QBT_TR(Rename rule...)QBT_TR[CONTEXT=AutomatedRssDownloader]</a></li>
+    <li class="separator"><a href="#cloneRule"><img src="images/edit-copy.svg" alt="QBT_TR(Clone rule...)QBT_TR[CONTEXT=AutomatedRssDownloader]"> QBT_TR(Clone rule...)QBT_TR[CONTEXT=AutomatedRssDownloader]</a></li>
     <li class="separator"><a href="#clearDownloadedEpisodes"><img src="images/edit-clear.svg" alt="QBT_TR(Clear downloaded episodes...)QBT_TR[CONTEXT=AutomatedRssDownloader]"> QBT_TR(Clear downloaded episodes...)QBT_TR[CONTEXT=AutomatedRssDownloader]</a></li>
 </ul>
 
@@ -340,13 +355,16 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
                 updateRulesList: updateRulesList,
                 showRule: showRule,
                 renameRule: renameRule,
+                cloneRule: cloneRule,
                 modifyRuleState: modifyRuleState,
                 saveSettings: saveSettings,
                 rssDownloaderRulesTable: rssDownloaderRulesTable,
                 rssDownloaderFeedSelectionTable: rssDownloaderFeedSelectionTable,
                 setElementTitles: setElementTitles,
                 addRule: addRule,
-                removeSelectedRule: removeSelectedRule
+                removeSelectedRule: removeSelectedRule,
+                exportRules: exportRules,
+                importRules: importRules
             };
         };
 
@@ -356,6 +374,36 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
 
         let rulesList = {};
         let feedList = [];
+
+        const exportRules = () => {
+            const url = new URL("api/v2/rss/exportRules", window.location);
+            window.qBittorrent.Misc.downloadFile(url, "rss-downloader-rules.json");
+        };
+
+        const importRules = () => {
+            const input = document.getElementById("rssRulesFileInput");
+            input.value = "";
+            input.click();
+        };
+
+        document.getElementById("rssRulesFileInput").addEventListener("change", (event) => {
+            const file = document.getElementById("rssRulesFileInput").files[0];
+            if (!file)
+                return;
+
+            const formData = new FormData();
+            formData.append("rules", file, "rules");
+            fetch("api/v2/rss/importRules", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(async (response) => {
+                    if (!response.ok)
+                        throw new Error(await response.text());
+                    updateRulesList();
+                })
+                .catch((error) => alert(error.message));
+        });
 
         const setup = () => {
             const pref = window.parent.qBittorrent.Cache.preferences.get();
@@ -370,7 +418,9 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
             document.getElementById("centerRssDownloaderColumn").style.height = `calc(100% - ${warningHeight}px)`;
             document.getElementById("rightRssDownloaderColumn").style.height = `calc(100% - ${warningHeight}px)`;
 
-            document.getElementById("rulesTable").style.height = `calc(100% - ${document.getElementById("rulesTableDesc").getBoundingClientRect().height}px)`;
+            const rulesTableHeaderHeight = document.getElementById("topMenuBar").getBoundingClientRect().height
+                + document.getElementById("rulesFileButtons").getBoundingClientRect().height;
+            document.getElementById("rulesTable").style.height = `calc(100% - ${rulesTableHeaderHeight}px)`;
             document.getElementById("rssDownloaderArticlesTable").style.height = `calc(100% - ${document.getElementById("articleTableDesc").getBoundingClientRect().height}px)`;
 
             const centerRowNotTableHeight = document.getElementById("saveButton").getBoundingClientRect().height
@@ -396,6 +446,9 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
                     renameRule: (el) => {
                         renameRule(rssDownloaderRulesTable.getRow(rssDownloaderRulesTable.selectedRows[0]).full_data.name);
                     },
+                    cloneRule: (el) => {
+                        cloneRule(rssDownloaderRulesTable.getRow(rssDownloaderRulesTable.selectedRows[0]).full_data.name);
+                    },
                     clearDownloadedEpisodes: (el) => {
                         clearDownloadedEpisodes(rssDownloaderRulesTable.selectedRows
                             .map((sRow) => rssDownloaderRulesTable.getRow(sRow).full_data.name));
@@ -403,7 +456,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
                 },
                 offsets: {
                     x: 0,
-                    y: -3
+                    y: 0
                 }
             });
             rssDownloaderRulesTable.setup("rssDownloaderRuleTableDiv", "rssDownloaderRuleFixedHeaderDiv", rssDownloaderRuleContextMenu);
@@ -547,6 +600,24 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
             });
         };
 
+        const cloneRule = (rule) => {
+            new MochaUI.Modal({
+                ...window.qBittorrent.Dialog.baseModalOptions,
+                id: "rssCloneRuleDialog",
+                icon: "images/qbittorrent-tray.svg",
+                title: "QBT_TR(Rule cloning)QBT_TR[CONTEXT=AutomatedRssDownloader]",
+                data: {
+                    sourceName: rule
+                },
+                contentURL: `views/rssCloneRule.html?v=${CACHEID}`,
+                modalOverlayClose: false,
+                onContentLoaded: (w) => {
+                    MochaUI.resizeWindow(w, { centered: true });
+                    MochaUI.centerWindow(w);
+                }
+            });
+        };
+
         const removeSelectedRule = () => {
             if (rssDownloaderRulesTable.selectedRows.length === 0)
                 return;
@@ -575,7 +646,7 @@ Supports the formats: S01E01, 1x1, 2017.12.31 and 31.12.2017 (Date formats also 
             new MochaUI.Window({
                 id: "clearRulesPage",
                 icon: "images/qbittorrent-tray.svg",
-                title: "QBT_TR(New rule name)QBT_TR[CONTEXT=AutomatedRssDownloader]",
+                title: "QBT_TR(Clear downloaded episodes confirmation)QBT_TR[CONTEXT=AutomatedRssDownloader]",
                 loadMethod: "iframe",
                 contentURL: `confirmruleclear.html?v=${CACHEID}&rules=${encodeURIComponent(encodedRules.join("|"))}`,
                 scrollbars: false,

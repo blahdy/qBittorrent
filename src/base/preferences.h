@@ -33,6 +33,7 @@
 #include <QtSystemDetection>
 #include <QObject>
 
+#include "base/net/smtpencryptiontype.h"
 #include "base/pathfwd.h"
 #include "base/utils/net.h"
 
@@ -71,19 +72,6 @@ namespace DNS
         None = -1
     };
     Q_ENUM_NS(Service)
-}
-
-namespace TrayIcon
-{
-    Q_NAMESPACE
-
-    enum class Style : int
-    {
-        Normal = 0,
-        MonoDark = 1,
-        MonoLight = 2
-    };
-    Q_ENUM_NS(Style)
 }
 
 class Preferences final : public QObject
@@ -155,8 +143,8 @@ public:
     void setMailNotificationEmail(const QString &mail);
     QString getMailNotificationSMTP() const;
     void setMailNotificationSMTP(const QString &smtpServer);
-    bool getMailNotificationSMTPSSL() const;
-    void setMailNotificationSMTPSSL(bool use);
+    Net::SMTPEncryptionType getMailNotificationSMTPEncryptionType() const;
+    void setMailNotificationSMTPEncryptionType(Net::SMTPEncryptionType mailEncryptionType);
     bool getMailNotificationSMTPAuth() const;
     void setMailNotificationSMTPAuth(bool use);
     QString getMailNotificationSMTPUsername() const;
@@ -183,10 +171,12 @@ public:
     // Search UI
     int searchHistoryLength() const;
     void setSearchHistoryLength(int length);
-    bool storeOpenedSearchTabs() const;
-    void setStoreOpenedSearchTabs(bool enabled);
-    bool storeOpenedSearchTabResults() const;
-    void setStoreOpenedSearchTabResults(bool enabled);
+    bool storeSearchJobs() const;
+    void setStoreSearchJobs(bool enabled);
+    bool storeSearchJobResults() const;
+    void setStoreSearchJobResults(bool enabled);
+    bool closeSearchTabWithMiddleClick() const;
+    void setCloseSearchTabWithMiddleClick(bool enabled);
 
     // HTTP Server
     bool isWebUIEnabled() const;
@@ -219,6 +209,8 @@ public:
     void setWebUIBanDuration(std::chrono::seconds duration);
     int getWebUISessionTimeout() const;
     void setWebUISessionTimeout(int timeout);
+    int getWebUISessionsCountLimit() const;
+    void setWebUISessionsCountLimit(int limit);
 
     // WebUI security
     bool isWebUIClickjackingProtectionEnabled() const;
@@ -350,8 +342,6 @@ public:
     void setCloseToTray(bool b);
     bool closeToTrayNotified() const;
     void setCloseToTrayNotified(bool b);
-    TrayIcon::Style trayIconStyle() const;
-    void setTrayIconStyle(TrayIcon::Style style);
     bool iconsInMenusEnabled() const;
     void setIconsInMenusEnabled(bool enable);
 #endif // Q_OS_MACOS
@@ -390,6 +380,8 @@ public:
     void setTrackerListState(const QByteArray &state);
     QStringList getRssOpenFolders() const;
     void setRssOpenFolders(const QStringList &folders);
+    QByteArray getRssFeedListState() const;
+    void setRssFeedListState(const QByteArray &state);
     QByteArray getRssSideSplitterState() const;
     void setRssSideSplitterState(const QByteArray &state);
     QByteArray getRssMainSplitterState() const;

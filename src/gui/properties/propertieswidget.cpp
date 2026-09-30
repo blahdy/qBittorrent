@@ -83,7 +83,7 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     m_contentFilterLine->setFixedWidth(300);
     m_contentFilterLine->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_contentFilterLine, &QWidget::customContextMenuRequested, this, &PropertiesWidget::showContentFilterContextMenu);
-    connect(m_contentFilterLine, &LineEdit::textChanged, this, &PropertiesWidget::setContentFilterPattern);
+    connect(m_contentFilterLine, &LineEdit::textUpdated, this, &PropertiesWidget::setContentFilterPattern);
     m_ui->contentFilterLayout->insertWidget(3, m_contentFilterLine);
 
     m_ui->filesList->setContentDragAllowed(true);
@@ -96,7 +96,6 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     connect(m_ui->listWebSeeds, &QWidget::customContextMenuRequested, this, &PropertiesWidget::displayWebSeedListMenu);
     connect(m_ui->stackedProperties, &QStackedWidget::currentChanged, this, &PropertiesWidget::loadDynamicData);
     connect(BitTorrent::Session::instance(), &BitTorrent::Session::torrentSavePathChanged, this, &PropertiesWidget::updateSavePath);
-    connect(BitTorrent::Session::instance(), &BitTorrent::Session::torrentMetadataReceived, this, &PropertiesWidget::updateTorrentInfos);
     connect(m_ui->filesList, &TorrentContentWidget::stateChanged, this, &PropertiesWidget::saveSettings);
 
     // set bar height relative to screen dpi
@@ -309,12 +308,6 @@ void PropertiesWidget::showContentFilterContextMenu()
 void PropertiesWidget::setContentFilterPattern()
 {
     m_ui->filesList->setFilterPattern(m_contentFilterLine->text(), m_storeFilterPatternFormat.get(FilterPatternFormat::Wildcards));
-}
-
-void PropertiesWidget::updateTorrentInfos(BitTorrent::Torrent *const torrent)
-{
-    if (torrent == m_torrent)
-        loadTorrentInfos(m_torrent);
 }
 
 void PropertiesWidget::loadTorrentInfos(BitTorrent::Torrent *const torrent)
@@ -608,10 +601,11 @@ void PropertiesWidget::configure()
                 delete m_speedWidget;
             }
 
-            const auto displayText = u"<center><b>%1</b><p>%2</p></center>"_s
+            const auto displayText = u"<center><b>%1</b><p><a href=\"#\">%2</a></p></center>"_s
                 .arg(tr("Speed graphs are disabled"), tr("You can enable it in Advanced Options"));
             auto *label = new QLabel(displayText, this);
             label->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+            connect(label, &QLabel::linkActivated, this, &PropertiesWidget::openAdvancedSettingsLinkActivated);
             m_speedWidget = label;
             m_ui->speedLayout->addWidget(m_speedWidget);
         }

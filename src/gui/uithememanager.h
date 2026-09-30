@@ -42,6 +42,8 @@
 #include <QPixmap>
 #include <QString>
 
+#include "base/settingvalue.h"
+#include "trayiconstyle.h"
 #include "uithemesource.h"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 8, 0))
@@ -49,7 +51,6 @@
 #endif
 
 #ifdef QBT_HAS_COLORSCHEME_OPTION
-#include "base/settingvalue.h"
 #include "colorscheme.h"
 #endif
 
@@ -69,14 +70,20 @@ public:
     ColorScheme colorScheme() const;
     void setColorScheme(ColorScheme value);
 #endif
+    TrayIconStyle trayIconStyle() const;
+    void setTrayIconStyle(TrayIconStyle value);
 
     QIcon getIcon(const QString &iconId, const QString &fallback = {}) const;
+    QIcon getSystrayIcon() const;
     QIcon getFlagIcon(const QString &countryIsoCode) const;
     QPixmap getScaledPixmap(const QString &iconId, int height) const;
 
     QColor getColor(const QString &id) const;
 
     void applyThemeSettings();
+#ifdef Q_OS_WIN
+    void updateSystemColorMode();
+#endif
 
 signals:
     void themeChanged();
@@ -102,12 +109,15 @@ private:
     bool applyThemeOverlay();
     void applyStyle(bool useConfiguredStyle) const;
     void applyPalette() const;
+    void applyStyleSheet() const;
     void applyStyleSheet(const QByteArray &styleSheet) const;
     void onColorSchemeChanged();
 
 #ifdef QBT_HAS_COLORSCHEME_OPTION
     void applyColorScheme() const;
 #endif
+
+    QIcon getIcon(const QString &iconId, const QString &fallback, ColorMode colorMode) const;
 
     static UIThemeManager *m_instance;
     const QString m_defaultStyleName;
@@ -117,6 +127,7 @@ private:
 #ifdef QBT_HAS_COLORSCHEME_OPTION
     SettingValue<ColorScheme> m_colorSchemeSetting;
 #endif
+    SettingValue<TrayIconStyle> m_trayIconStyleSetting;
 #if (defined(Q_OS_UNIX) && !defined(Q_OS_MACOS))
     bool m_useSystemIcons;
 #endif
@@ -128,4 +139,8 @@ private:
     mutable QHash<QString, QIcon> m_icons;
     mutable QHash<QString, QIcon> m_darkModeIcons;
     mutable QHash<QString, QIcon> m_flags;
+
+#ifdef Q_OS_WIN
+    ColorMode m_systemColorMode = ColorMode::Light;
+#endif
 };

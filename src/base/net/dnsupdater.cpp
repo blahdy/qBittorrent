@@ -78,7 +78,7 @@ void DNSUpdater::checkPublicIP()
     Q_ASSERT(m_state == OK);
 
     DownloadManager::instance()->download(
-            DownloadRequest(u"http://checkip.dyndns.org"_s).userAgent(QStringLiteral("qBittorrent/" QBT_VERSION_2))
+            DownloadRequest(u"https://checkip.dyndns.org"_s).userAgent(QStringLiteral("qBittorrent/" QBT_VERSION_2))
             , Preferences::instance()->useProxyForGeneralPurposes(), this, &DNSUpdater::ipRequestFinished);
 
     m_lastIPCheckTime = QDateTime::currentDateTime();
@@ -133,11 +133,7 @@ void DNSUpdater::updateDNSService()
 QString DNSUpdater::getUpdateUrl() const
 {
     QUrl url;
-#ifdef QT_NO_OPENSSL
-    url.setScheme(u"http"_s);
-#else
     url.setScheme(u"https"_s);
-#endif
     url.setUserName(m_username);
     url.setPassword(m_password);
 

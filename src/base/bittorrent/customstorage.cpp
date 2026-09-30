@@ -75,26 +75,17 @@ CustomDiskIOThread::CustomDiskIOThread(std::unique_ptr<libtorrent::disk_interfac
 lt::storage_holder CustomDiskIOThread::new_torrent(const lt::storage_params &storageParams, const std::shared_ptr<void> &torrent)
 {
     lt::storage_holder storageHolder = m_nativeDiskIO->new_torrent(storageParams, torrent);
-
+    m_storageData[storageHolder] =
+    {
+        .savePath = Path(storageParams.path),
 #if LIBTORRENT_VERSION_NUM >= 20100
-    const Path savePath {std::string(storageParams.path)};
-    m_storageData[storageHolder] =
-    {
-        savePath,
-        storageParams.files,
-        storageParams.renamed_files,
-        storageParams.priorities
-    };
+        .files = storageParams.files,
+        .renamedFiles = storageParams.renamed_files,
 #else
-    const Path savePath {storageParams.path};
-    m_storageData[storageHolder] =
-    {
-        savePath,
-        storageParams.mapped_files ? *storageParams.mapped_files : storageParams.files,
-        storageParams.priorities
-    };
+        .files = storageParams.mapped_files ? *storageParams.mapped_files : storageParams.files,
 #endif
-
+        .filePriorities = storageParams.priorities
+    };
     return storageHolder;
 }
 
@@ -260,8 +251,8 @@ void CustomDiskIOThread::handleCompleteFiles(lt::storage_index_t storage, const 
             const Path completeFilePath = incompleteFilePath.removedExtension(QB_EXT);
             if (completeFilePath.exists())
             {
-                Utils::Fs::removeFile(incompleteFilePath);
-                Utils::Fs::renameFile(completeFilePath, incompleteFilePath);
+                if (Utils::Fs::removeFile(incompleteFilePath))
+                    Utils::Fs::renameFile(completeFilePath, incompleteFilePath);
             }
         }
     }
@@ -325,8 +316,8 @@ void CustomStorage::handleCompleteFiles(const Path &savePath)
             const Path completeFilePath = incompleteFilePath.removedExtension(QB_EXT);
             if (completeFilePath.exists())
             {
-                Utils::Fs::removeFile(incompleteFilePath);
-                Utils::Fs::renameFile(completeFilePath, incompleteFilePath);
+                if (Utils::Fs::removeFile(incompleteFilePath))
+                    Utils::Fs::renameFile(completeFilePath, incompleteFilePath);
             }
         }
     }

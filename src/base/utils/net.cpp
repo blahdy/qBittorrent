@@ -28,6 +28,8 @@
 
 #include "net.h"
 
+#include <ranges>
+
 #include <QList>
 #include <QNetworkInterface>
 #include <QSslCertificate>
@@ -151,6 +153,10 @@ namespace Utils
             }
             if (addressFamily == QAbstractSocket::IPv6Protocol)
             {
+                // Special case: /128 is a single IP
+                if (prefixLength == 128)
+                    return std::make_pair(address, address);
+
                 Q_IPV6ADDR addressBytes = address.toIPv6Address();
 
                 const int headBytes = prefixLength / 8;
@@ -176,7 +182,7 @@ namespace Utils
         {
             // Link-local IPv6 textual address always contains a scope id (or zone index)
             // The scope id is appended to the IPv6 address using the '%' character
-            // The scope id can be either a interface name or an interface number
+            // The scope id can be either an interface name or an interface number
             // Examples:
             // fe80::1%ethernet_17
             // fe80::1%13
@@ -201,6 +207,33 @@ namespace Utils
             QHostAddress canonical(addr.toIPv6Address());
             canonical.setScopeId(QString::number(id));
             return canonical;
+        }
+
+        QHostAddress resolveForwardedClientAddress(const QHostAddress &peerAddress
+                , const QStringView forwardedFor, const QList<Subnet> &trustedProxies)
+        {
+            // only a trusted proxy may declare an address on the client's behalf
+            if (!isIPInSubnets(peerAddress, trustedProxies))
+                return peerAddress;
+
+            const QList<QStringView> hops = forwardedFor.split(u',', Qt::SkipEmptyParts);
+            if (hops.isEmpty())
+                return peerAddress;
+
+            QHostAddress hopAddress;
+            for (const QStringView hop : std::views::reverse(hops))
+            {
+                if (!hopAddress.setAddress(hop.trimmed().toString()))  // the chain is unresolvable past this point
+                    return peerAddress;
+
+                // anything beyond the nearest hop that no trusted proxy vouches for was
+                // supplied by the client itself and cannot be relied upon
+                if (!isIPInSubnets(hopAddress, trustedProxies))
+                    return hopAddress;
+            }
+
+            // every hop is itself a trusted proxy
+            return hopAddress;
         }
 
         std::optional<IPRange> parseIPRange(QStringView filterStr, const bool isStrictIPv4)
@@ -281,6 +314,28 @@ namespace Utils
         bool isSSLCertificatesValid(const QByteArray &data)
         {
             return !loadSSLCertificate(data).isEmpty();
+        }
+
+        bool lessThan(const QHostAddress &left, const QHostAddress &right)
+        {
+            const QAbstractSocket::NetworkLayerProtocol leftProtocol = left.protocol();
+            const QAbstractSocket::NetworkLayerProtocol rightProtocol = right.protocol();
+
+            if (leftProtocol != rightProtocol)
+                return leftProtocol < rightProtocol;
+
+            switch (leftProtocol)
+            {
+            case QAbstractSocket::IPv4Protocol:
+                return left.toIPv4Address() < right.toIPv4Address();
+            case QAbstractSocket::IPv6Protocol:
+                return std::ranges::lexicographical_compare(left.toIPv6Address().c, right.toIPv6Address().c);
+            case QAbstractSocket::AnyIPProtocol:
+            case QAbstractSocket::UnknownNetworkLayerProtocol:
+                return left.toString() < left.toString();
+            }
+
+            Q_UNREACHABLE_RETURN(false);
         }
     }
 }

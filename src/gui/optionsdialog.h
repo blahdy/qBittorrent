@@ -31,6 +31,7 @@
 
 #include <QDialog>
 
+#include "base/net/proxytype.h"
 #include "base/pathfwd.h"
 #include "base/settingvalue.h"
 #include "guiapplicationcomponent.h"
@@ -48,11 +49,6 @@ enum DoubleClickAction
     NO_ACTION = 3,
     SHOW_OPTIONS = 4
 };
-
-namespace Net
-{
-    enum class ProxyType;
-}
 
 namespace Ui
 {
@@ -85,9 +81,11 @@ public:
 
 public slots:
     void showConnectionTab();
+    void showSpeedWidgetSetting();
 
 private slots:
     void adjustProxyOptions();
+    void changeSMTPEncryptionPortInfoLabel();
     void on_buttonBox_accepted();
     void on_buttonBox_rejected();
     void enableApplyButton();
@@ -165,8 +163,6 @@ private:
     bool preAllocateAllFiles() const;
     bool useAdditionDialog() const;
     bool addTorrentsStopped() const;
-    Path getTorrentExportDir() const;
-    Path getFinishedTorrentExportDir() const;
     // Connection options
     int getPort() const;
     bool isUPnPEnabled() const;
