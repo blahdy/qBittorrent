@@ -30,7 +30,7 @@
 #include "speedplotview.h"
 
 #include <cmath>
-
+#include <QEvent>
 #include <QLocale>
 #include <QPainter>
 #include <QPen>
