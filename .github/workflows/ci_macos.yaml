@@ -67,9 +67,9 @@ jobs:
             rm -rf local/etc/openssl@1.1
             rm -rf local/etc/ca-certificates
             rm -rf local/etc/ca-certificates/cert.pem
+            brew update
             brew install -v \
               cmake ninja zlib ca-certificates
-            brew postinstall -v ca-certificates
             brew install openssl@4
             # preinstalled on the image: cmake ninja
 
