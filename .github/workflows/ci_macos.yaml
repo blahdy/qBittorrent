@@ -37,6 +37,21 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Install dependencies
+        uses: nick-fields/retry@v4
+        env:
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+        with:
+          timeout_seconds: 120
+          retry_wait_seconds: 20
+          max_attempts: 1
+          command: |
+            brew update > /dev/null
+            brew install \
+              cmake ninja zlib
+            # preinstalled on the image: cmake ninja
+
       - name: Install boost
         run: |
           boost_url="https://archives.boost.io/release/${{ matrix.libtorrent.boost_major_version }}.${{ matrix.libtorrent.boost_minor_version }}.${{ matrix.libtorrent.boost_patch_version }}/source/boost_${{ matrix.libtorrent.boost_major_version }}_${{ matrix.libtorrent.boost_minor_version }}_${{ matrix.libtorrent.boost_patch_version }}.tar.gz"
@@ -62,6 +77,35 @@ jobs:
           # Not sure why Qt made a hard dependency on qtdeclarative, try removing it when Qt > 6.4.0
           cache: true
 
+      - name: Install OpenSSL
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          OPENSSL_VERSION="4.0.2"
+          OPENSSL_PREFIX="${RUNNER_TEMP}/openssl"
+
+          curl -fL \
+            "https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz" \
+            -o "${RUNNER_TEMP}/openssl.tar.gz"
+
+          tar -xzf "${RUNNER_TEMP}/openssl.tar.gz" -C "${RUNNER_TEMP}"
+          cd "${RUNNER_TEMP}/openssl-${OPENSSL_VERSION}"
+
+          ./Configure \
+            darwin64-x86_64-cc \
+            --prefix="${OPENSSL_PREFIX}" \
+            --openssldir="${OPENSSL_PREFIX}/ssl" \
+            no-shared
+
+          make -j"$(sysctl -n hw.ncpu)"
+          make install_sw
+
+          echo "${OPENSSL_PREFIX}/bin" >> "${GITHUB_PATH}"
+          echo "OPENSSL_ROOT_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "OPENSSL_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "OPENSSL_PREFIX=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+
       - name: Install libtorrent
         run: |
           git clone \
@@ -79,24 +123,40 @@ jobs:
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DBOOST_ROOT="${{ env.boost_path }}/lib/cmake" \
+            -DOPENSSL_ROOT_DIR="${OPENSSL_PREFIX}" \
+            -DOPENSSL_USE_STATIC_LIBS=TRUE \
             -Ddeprecated-functions=OFF \
             ${{ matrix.libtorrent.libt_build_flags }}
           cmake --build build
           sudo cmake --install build
 
       - name: Build qBittorrent
+        shell: bash
         run: |
-          OPENSSL_PREFIX="$(brew --prefix openssl@3)"
+          set -euxo pipefail
 
-          CXXFLAGS="$CXXFLAGS -isystem ${OPENSSL_PREFIX}/include -DQT_FORCE_ASSERTS -Werror -Wno-error=deprecated-declarations -Wno-error=deprecated-literal-operator" \
-          CXXFLAGS="$CXXFLAGS -DQT_FORCE_ASSERTS -Werror -Wno-error=deprecated-declarations -Wno-error=deprecated-literal-operator" \
-          LDFLAGS="$LDFLAGS -gz" \
+          # qBittorrent enables -Wold-style-cast for its own sources. Do not
+          # apply that warning to OpenSSL headers; instead, remove the warning
+          # from the qBittorrent compile options entirely for this CI build.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("cmake/Modules/CommonConfig.cmake")
+          text = path.read_text()
+          old = "        -Wold-style-cast\\n"
+          if old not in text:
+              raise SystemExit("Expected -Wold-style-cast entry was not found")
+          path.write_text(text.replace(old, ""))
+          PY
+
           cmake \
             -B build \
             -G "Ninja" \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DBOOST_ROOT="${{ env.boost_path }}/lib/cmake" \
+            -DOPENSSL_ROOT_DIR="${OPENSSL_PREFIX}" \
+            -DOPENSSL_USE_STATIC_LIBS=TRUE \
             -DTESTING=ON \
             -DVERBOSE_CONFIGURE=ON \
             -D${{ matrix.qbt_gui }}
