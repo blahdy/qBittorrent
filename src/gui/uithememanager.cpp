@@ -170,7 +170,6 @@ namespace
     {
         return (themePath.isAbsolute() ? themePath : (Profile::instance()->location(SpecialFolder::Config) / themePath));
     }
-    }
 }
 
 class UIThemeIconEngine final : public QIconEngine
