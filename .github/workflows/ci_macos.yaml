@@ -49,7 +49,7 @@ jobs:
           command: |
             brew update > /dev/null
             brew install \
-              cmake ninja zlib openssl@4
+              cmake ninja zlib ca-certificates openssl@4
             # preinstalled on the image: cmake ninja
 
       - name: Setup ccache
