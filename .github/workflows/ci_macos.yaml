@@ -93,7 +93,6 @@ jobs:
           cd "${RUNNER_TEMP}/openssl-${OPENSSL_VERSION}"
 
           ./Configure \
-            darwin64-x86_64-cc \
             --prefix="${OPENSSL_PREFIX}" \
             --openssldir="${OPENSSL_PREFIX}/ssl" \
             no-shared
@@ -105,6 +104,11 @@ jobs:
           echo "OPENSSL_ROOT_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
           echo "OPENSSL_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
           echo "OPENSSL_PREFIX=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "CMAKE_PREFIX_PATH=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "PKG_CONFIG_PATH=${OPENSSL_PREFIX}/lib/pkgconfig" >> "${GITHUB_ENV}"
+          echo "CFLAGS=-isystem ${OPENSSL_PREFIX}/include ${CFLAGS:-}" >> "${GITHUB_ENV}"
+          echo "CXXFLAGS=-isystem ${OPENSSL_PREFIX}/include ${CXXFLAGS:-}" >> "${GITHUB_ENV}"
+          echo "LDFLAGS=-L${OPENSSL_PREFIX}/lib ${LDFLAGS:-}" >> "${GITHUB_ENV}"
 
       - name: Install libtorrent
         run: |
