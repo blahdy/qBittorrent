@@ -262,6 +262,11 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     columnFilterSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     m_columnFilterEdit = new LineEdit;
+#ifdef Q_OS_MACOS
+    m_columnFilterEdit->setStyleSheet(QStringLiteral(
+        "QLineEdit { border: 1px solid palette(mid); border-radius: 8px; padding: 1px 7px;"
+        " background-color: palette(base); }"));
+#endif
     m_columnFilterEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     m_columnFilterEdit->setFixedWidth(200);
     m_columnFilterEdit->setPlaceholderText(tr("Filter torrents..."));
@@ -269,6 +274,9 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     connect(m_columnFilterEdit, &QWidget::customContextMenuRequested, this, &MainWindow::showFilterContextMenu);
 
     m_columnFilterComboBox = new QComboBox;
+#ifdef Q_OS_MACOS
+    m_columnFilterEdit->setFixedHeight(m_columnFilterComboBox->sizeHint().height());
+#endif
 
     QHBoxLayout *columnFilterLayout = new QHBoxLayout;
     columnFilterLayout->setContentsMargins(0, 0, 0, 0);
@@ -1741,7 +1749,7 @@ void MainWindow::handleUpdateCheckFinished(ProgramUpdater *updater, const bool i
     {
         const QString msg {tr("A new version is available.") + u"<br/>"
             + tr("Do you want to download %1?").arg(newVersion.toString()) + u"<br/><br/>"
-            + u"<a href=\"https://www.qbittorrent.org/news\">%1</a>"_s.arg(tr("Open changelog..."))};
+            + u"<a href=\"https://github.com/vit9696/qBittorrent/releases\">%1</a>"_s.arg(tr("Open changelog..."))};
         auto *msgBox = new QMessageBox {QMessageBox::Question, tr("qBittorrent Update Available"), msg
             , (QMessageBox::Yes | QMessageBox::No), this};
         msgBox->setAttribute(Qt::WA_DeleteOnClose);

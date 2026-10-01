@@ -79,6 +79,11 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
 
     // Torrent content filtering
     m_contentFilterLine = new LineEdit(this);
+#ifdef Q_OS_MACOS
+    m_contentFilterLine->setStyleSheet(QStringLiteral(
+        "QLineEdit { border: 1px solid palette(mid); border-radius: 8px; padding: 1px 7px;"
+        " background-color: palette(base); }"));
+#endif
     m_contentFilterLine->setPlaceholderText(tr("Filter files..."));
     m_contentFilterLine->setFixedWidth(300);
     m_contentFilterLine->setContextMenuPolicy(Qt::CustomContextMenu);
