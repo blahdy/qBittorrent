@@ -28,7 +28,6 @@ jobs:
         qt_version: ["6.12.0"]
 
     env:
-      boost_path: "${{ github.workspace }}/../boost"
       libtorrent_path: "${{ github.workspace }}/../libtorrent"
 
     steps:
@@ -52,21 +51,27 @@ jobs:
               cmake ninja zlib
             # preinstalled on the image: cmake ninja
 
-      - name: Install boost
+      - name: Install Boost and zlib
+        shell: bash
         run: |
-          boost_url="https://archives.boost.io/release/${{ matrix.libtorrent.boost_major_version }}.${{ matrix.libtorrent.boost_minor_version }}.${{ matrix.libtorrent.boost_patch_version }}/source/boost_${{ matrix.libtorrent.boost_major_version }}_${{ matrix.libtorrent.boost_minor_version }}_${{ matrix.libtorrent.boost_patch_version }}.tar.gz"
-          boost_url2="https://sourceforge.net/projects/boost/files/boost/${{ matrix.libtorrent.boost_major_version }}.${{ matrix.libtorrent.boost_minor_version }}.${{ matrix.libtorrent.boost_patch_version }}/boost_${{ matrix.libtorrent.boost_major_version }}_${{ matrix.libtorrent.boost_minor_version }}_${{ matrix.libtorrent.boost_patch_version }}.tar.gz"
-          set +e
-          curl -L -o "${{ runner.temp }}/boost.tar.gz" "$boost_url"
-          tar -xf "${{ runner.temp }}/boost.tar.gz" -C "${{ github.workspace }}/.."; _exitCode="$?"
-          if [ "$_exitCode" -ne "0" ]; then
-            curl -L -o "${{ runner.temp }}/boost.tar.gz" "$boost_url2"
-            tar -xf "${{ runner.temp }}/boost.tar.gz" -C "${{ github.workspace }}/.."; _exitCode="$?"
-          fi
-          mv "${{ github.workspace }}/.."/boost_* "${{ env.boost_path }}"
-          cd "${{ env.boost_path }}"
-          ./bootstrap.sh
-          ./b2 stage --stagedir=./ --with-headers
+          set -euxo pipefail
+
+          brew install boost zlib
+
+          BOOST_PREFIX="$(brew --prefix boost)"
+          ZLIB_PREFIX="$(brew --prefix zlib)"
+
+          echo "BOOST_ROOT=${BOOST_PREFIX}" >> "${GITHUB_ENV}"
+          echo "BOOST_INCLUDEDIR=${BOOST_PREFIX}/include" >> "${GITHUB_ENV}"
+          echo "BOOST_LIBRARYDIR=${BOOST_PREFIX}/lib" >> "${GITHUB_ENV}"
+          echo "ZLIB_ROOT=${ZLIB_PREFIX}" >> "${GITHUB_ENV}"
+          echo "ZLIB_INCLUDE_DIR=${ZLIB_PREFIX}/include" >> "${GITHUB_ENV}"
+          echo "ZLIB_LIBRARY=${ZLIB_PREFIX}/lib/libz.tbd" >> "${GITHUB_ENV}"
+          echo "CMAKE_PREFIX_PATH=${BOOST_PREFIX}:${ZLIB_PREFIX}" >> "${GITHUB_ENV}"
+
+          brew --prefix boost
+          brew --prefix zlib
+          brew list --versions boost zlib
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -104,7 +109,7 @@ jobs:
           echo "OPENSSL_ROOT_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
           echo "OPENSSL_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
           echo "OPENSSL_PREFIX=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
-          echo "CMAKE_PREFIX_PATH=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "CMAKE_PREFIX_PATH=${OPENSSL_PREFIX}:${BOOST_ROOT}:${ZLIB_ROOT}" >> "${GITHUB_ENV}"
           echo "PKG_CONFIG_PATH=${OPENSSL_PREFIX}/lib/pkgconfig" >> "${GITHUB_ENV}"
           echo "CFLAGS=-isystem ${OPENSSL_PREFIX}/include ${CFLAGS:-}" >> "${GITHUB_ENV}"
           echo "CXXFLAGS=-isystem ${OPENSSL_PREFIX}/include ${CXXFLAGS:-}" >> "${GITHUB_ENV}"
@@ -126,11 +131,18 @@ jobs:
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_CXX_STANDARD=23 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DBOOST_ROOT="${{ env.boost_path }}/lib/cmake" \
+            -DBOOST_ROOT="${BOOST_ROOT}" \
+            -DBoost_ROOT="${BOOST_ROOT}" \
+            -DBoost_NO_SYSTEM_PATHS=ON \
             -DOPENSSL_ROOT_DIR="${OPENSSL_PREFIX}" \
             -DOPENSSL_USE_STATIC_LIBS=TRUE \
+            -DZLIB_ROOT="${ZLIB_ROOT}" \
+            -DZLIB_INCLUDE_DIR="${ZLIB_INCLUDE_DIR}" \
+            -DZLIB_LIBRARY="${ZLIB_LIBRARY}" \
+            -DZLIB_USE_STATIC_LIBS=ON \
             -Ddeprecated-functions=OFF \
             ${{ matrix.libtorrent.libt_build_flags }}
+          cmake -LA -N build | grep -E '^(Boost|ZLIB)_' || true
           cmake --build build
           sudo cmake --install build
 
@@ -144,12 +156,19 @@ jobs:
             -G "Ninja" \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DBOOST_ROOT="${{ env.boost_path }}/lib/cmake" \
+            -DBOOST_ROOT="${BOOST_ROOT}" \
+            -DBoost_ROOT="${BOOST_ROOT}" \
+            -DBoost_NO_SYSTEM_PATHS=ON \
             -DOPENSSL_ROOT_DIR="${OPENSSL_PREFIX}" \
             -DOPENSSL_USE_STATIC_LIBS=TRUE \
+            -DZLIB_ROOT="${ZLIB_ROOT}" \
+            -DZLIB_INCLUDE_DIR="${ZLIB_INCLUDE_DIR}" \
+            -DZLIB_LIBRARY="${ZLIB_LIBRARY}" \
+            -DZLIB_USE_STATIC_LIBS=ON \
             -DTESTING=ON \
             -DVERBOSE_CONFIGURE=ON \
             -D${{ matrix.qbt_gui }}
+          cmake -LA -N build | grep -E '^(Boost|ZLIB)_' || true
           cmake --build build --target qbt_update_translations
           cmake --build build
           cmake --build build --target check
