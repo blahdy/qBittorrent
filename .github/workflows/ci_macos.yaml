@@ -19,13 +19,10 @@ jobs:
       fail-fast: false
       matrix:
         libtorrent:
-          - version: "2.1.2"
-            boost_major_version: "1"
-            boost_minor_version: "92"
-            boost_patch_version: "0"
+          - branch: "RC_2_1"
             libt_build_flags: ""
         qbt_gui: ["GUI=ON"]
-        qt_version: ["6.12.0"]
+        qt_version: ["6.*.*"]
 
     env:
       libtorrent_path: "${{ github.workspace }}/../libtorrent"
@@ -66,7 +63,9 @@ jobs:
           echo "BOOST_LIBRARYDIR=${BOOST_PREFIX}/lib" >> "${GITHUB_ENV}"
           echo "ZLIB_ROOT=${ZLIB_PREFIX}" >> "${GITHUB_ENV}"
           echo "ZLIB_INCLUDE_DIR=${ZLIB_PREFIX}/include" >> "${GITHUB_ENV}"
-          echo "ZLIB_LIBRARY=${ZLIB_PREFIX}/lib/libz.tbd" >> "${GITHUB_ENV}"
+          ZLIB_LIBRARY="${ZLIB_PREFIX}/lib/libz.a"
+          test -f "${ZLIB_LIBRARY}"
+          echo "ZLIB_LIBRARY=${ZLIB_LIBRARY}" >> "${GITHUB_ENV}"
           echo "CMAKE_PREFIX_PATH=${BOOST_PREFIX}:${ZLIB_PREFIX}" >> "${GITHUB_ENV}"
 
           brew --prefix boost
@@ -118,7 +117,7 @@ jobs:
       - name: Install libtorrent
         run: |
           git clone \
-            --branch v${{ matrix.libtorrent.version }} \
+            --branch ${{ matrix.libtorrent.branch }} \
             --depth 1 \
             --recurse-submodules \
             https://github.com/arvidn/libtorrent.git \
@@ -216,5 +215,5 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: qBittorrent-CI_macOS_${{ matrix.qbt_gui }}_libtorrent-${{ matrix.libtorrent.version }}_Qt-${{ matrix.qt_version }}
+          name: qBittorrent-CI_macOS_${{ matrix.qbt_gui }}_libtorrent-${{ matrix.libtorrent.branch }}_Qt-${{ matrix.qt_version }}
           path: upload
