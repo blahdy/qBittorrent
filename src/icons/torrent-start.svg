@@ -1,11 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Generator: Apple Native CoreSVG 360-->
-<!DOCTYPE svg
-PUBLIC "-//W3C//DTD SVG 1.1//EN"
-       "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 19.9197 19.9218">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102 88" width="102" height="88">
+  <defs>
+    <linearGradient id="lightRim" x1="20%" y1="8%" x2="80%" y2="92%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".48" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eeeeee"/>
+    </linearGradient>
+  </defs>
+
+  <circle cx="48.5" cy="43.5" r="36.5" fill="#f9f9f9"/>
+  <circle cx="48.5" cy="43.5" r="35.7"
+          fill="none" stroke="url(#lightRim)" stroke-width="1.35"/>
+  <circle cx="48.5" cy="43.5" r="36.15"
+          fill="none" stroke="#e7e7e7" stroke-opacity=".35" stroke-width=".55"/>
+
+  <!-- torrent-start.svg: normalized and geometrically centered -->
+  <g transform="translate(30.650000 25.919693) scale(2.142973)">
+
  <g>
-  <rect height="19.9218" opacity="0" width="19.9197" x="0" y="0"/>
-  <path d="M19.9197 9.95469C19.9197 15.4407 15.4511 19.9094 9.95469 19.9094C4.46866 19.9094 4.44089e-16 15.4407 4.44089e-16 9.95469C4.44089e-16 4.46866 4.46866 0 9.95469 0C15.4511 0 19.9197 4.46866 19.9197 9.95469ZM7.0958 6.4614L7.0958 13.4625C7.0958 13.9418 7.63313 14.1762 8.09992 13.8858L13.8315 10.5047C14.2569 10.2639 14.2466 9.67673 13.8315 9.4256L8.09992 6.03813C7.67454 5.77876 7.0958 5.98216 7.0958 6.4614Z" fill="black" fill-opacity="0.85"/>
+  
+  <path d="M2.08018 14.9741C2.08018 15.9388 2.63419 16.395 3.30206 16.395C3.59037 16.395 3.90149 16.3037 4.19382 16.1441L15.5707 9.49967C16.379 9.02293 16.6591 8.71392 16.6591 8.19749C16.6591 7.68107 16.379 7.37205 15.5707 6.89532L4.19382 0.250928C3.90149 0.0912467 3.59037 0 3.30206 0C2.63419 0 2.08018 0.456233 2.08018 1.42085Z" fill="#575757" fill-opacity="1"/>
  </g>
+
+  </g>
 </svg>
