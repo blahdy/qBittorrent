@@ -86,15 +86,14 @@ jobs:
         run: |
           set -euxo pipefail
 
-          OPENSSL_VERSION="4.0.2"
           OPENSSL_PREFIX="${RUNNER_TEMP}/openssl"
+          OPENSSL_SRC="${RUNNER_TEMP}/openssl-src"
 
-          curl -fL \
-            "https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz" \
-            -o "${RUNNER_TEMP}/openssl.tar.gz"
-
-          tar -xzf "${RUNNER_TEMP}/openssl.tar.gz" -C "${RUNNER_TEMP}"
-          cd "${RUNNER_TEMP}/openssl-${OPENSSL_VERSION}"
+          git clone \
+            --depth 1 \
+            https://github.com/openssl/openssl.git \
+            "${OPENSSL_SRC}"
+          cd "${OPENSSL_SRC}"
 
           ./Configure \
             --prefix="${OPENSSL_PREFIX}" \
