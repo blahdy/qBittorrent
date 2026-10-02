@@ -264,7 +264,7 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
     m_columnFilterEdit = new LineEdit;
 #ifdef Q_OS_MACOS
     m_columnFilterEdit->setStyleSheet(QStringLiteral(
-        "QLineEdit { border: 1px solid palette(mid); border-radius: 8px; padding: 1px 7px;"
+        "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
         " background-color: palette(base); }"));
 #endif
     m_columnFilterEdit->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -275,7 +275,8 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
 
     m_columnFilterComboBox = new QComboBox;
 #ifdef Q_OS_MACOS
-    m_columnFilterEdit->setFixedHeight(m_columnFilterComboBox->sizeHint().height());
+    m_columnFilterEdit->setFixedHeight(28);
+    m_columnFilterComboBox->setFixedHeight(28);
 #endif
 
     QHBoxLayout *columnFilterLayout = new QHBoxLayout;
