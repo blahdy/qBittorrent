@@ -1,0 +1,218 @@
+name: CI - macOS
+
+on: [pull_request, push]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: ${{ github.head_ref != '' }}
+
+jobs:
+  ci:
+    name: Build
+    runs-on: xcode-27
+    permissions:
+      actions: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        libtorrent:
+          - branch: "RC_2_1"
+            libt_build_flags: ""
+        qbt_gui: ["GUI=ON"]
+        qt_version: ["6.*.*"]
+
+    env:
+      libtorrent_path: "${{ github.workspace }}/../libtorrent"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install dependencies
+        uses: nick-fields/retry@v4
+        env:
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+        with:
+          timeout_seconds: 120
+          retry_wait_seconds: 20
+          max_attempts: 1
+          command: |
+            brew update > /dev/null
+            brew install \
+              cmake ninja zlib
+            # preinstalled on the image: cmake ninja
+
+      - name: Install Boost and zlib
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          brew install boost zlib
+
+          BOOST_PREFIX="$(brew --prefix boost)"
+          ZLIB_PREFIX="$(brew --prefix zlib)"
+
+          echo "BOOST_ROOT=${BOOST_PREFIX}" >> "${GITHUB_ENV}"
+          echo "BOOST_INCLUDEDIR=${BOOST_PREFIX}/include" >> "${GITHUB_ENV}"
+          echo "BOOST_LIBRARYDIR=${BOOST_PREFIX}/lib" >> "${GITHUB_ENV}"
+          echo "ZLIB_ROOT=${ZLIB_PREFIX}" >> "${GITHUB_ENV}"
+          echo "ZLIB_INCLUDE_DIR=${ZLIB_PREFIX}/include" >> "${GITHUB_ENV}"
+          ZLIB_LIBRARY="${ZLIB_PREFIX}/lib/libz.a"
+          test -f "${ZLIB_LIBRARY}"
+          echo "ZLIB_LIBRARY=${ZLIB_LIBRARY}" >> "${GITHUB_ENV}"
+          echo "CMAKE_PREFIX_PATH=${BOOST_PREFIX}:${ZLIB_PREFIX}" >> "${GITHUB_ENV}"
+
+          brew --prefix boost
+          brew --prefix zlib
+          brew list --versions boost zlib
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ matrix.qt_version }}
+          archives: qtbase qtdeclarative qtsvg qttools
+          modules: qtimageformats
+          # Not sure why Qt made a hard dependency on qtdeclarative, try removing it when Qt > 6.4.0
+          cache: true
+
+      - name: Install OpenSSL
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          OPENSSL_PREFIX="${RUNNER_TEMP}/openssl"
+          OPENSSL_SRC="${RUNNER_TEMP}/openssl-src"
+
+          git clone \
+            --depth 1 \
+            https://github.com/openssl/openssl.git \
+            "${OPENSSL_SRC}"
+          cd "${OPENSSL_SRC}"
+
+          ./Configure \
+            --prefix="${OPENSSL_PREFIX}" \
+            --openssldir="${OPENSSL_PREFIX}/ssl" \
+            no-shared
+
+          make -j"$(sysctl -n hw.ncpu)"
+          make install_sw
+
+          echo "${OPENSSL_PREFIX}/bin" >> "${GITHUB_PATH}"
+          echo "OPENSSL_ROOT_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "OPENSSL_DIR=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "OPENSSL_PREFIX=${OPENSSL_PREFIX}" >> "${GITHUB_ENV}"
+          echo "CMAKE_PREFIX_PATH=${OPENSSL_PREFIX}:${BOOST_ROOT}:${ZLIB_ROOT}" >> "${GITHUB_ENV}"
+          echo "PKG_CONFIG_PATH=${OPENSSL_PREFIX}/lib/pkgconfig" >> "${GITHUB_ENV}"
+          echo "CFLAGS=-isystem ${OPENSSL_PREFIX}/include ${CFLAGS:-}" >> "${GITHUB_ENV}"
+          echo "CXXFLAGS=-isystem ${OPENSSL_PREFIX}/include ${CXXFLAGS:-}" >> "${GITHUB_ENV}"
+          echo "LDFLAGS=-L${OPENSSL_PREFIX}/lib ${LDFLAGS:-}" >> "${GITHUB_ENV}"
+
+      - name: Install libtorrent
+        run: |
+          git clone \
+            --branch ${{ matrix.libtorrent.branch }} \
+            --depth 1 \
+            --recurse-submodules \
+            https://github.com/arvidn/libtorrent.git \
+            ${{ env.libtorrent_path }}
+          cd ${{ env.libtorrent_path }}
+          cmake \
+            -B build \
+            -G "Ninja" \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_CXX_STANDARD=23 \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DBOOST_ROOT="${BOOST_ROOT}" \
+            -DBoost_ROOT="${BOOST_ROOT}" \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DOPENSSL_ROOT_DIR="${OPENSSL_PREFIX}" \
+            -DOPENSSL_USE_STATIC_LIBS=TRUE \
+            -DZLIB_ROOT="${ZLIB_ROOT}" \
+            -DZLIB_INCLUDE_DIR="${ZLIB_INCLUDE_DIR}" \
+            -DZLIB_LIBRARY="${ZLIB_LIBRARY}" \
+            -DZLIB_USE_STATIC_LIBS=ON \
+            -Ddeprecated-functions=OFF \
+            ${{ matrix.libtorrent.libt_build_flags }}
+          cmake -LA -N build | grep -E '^(Boost|ZLIB)_' || true
+          cmake --build build
+          sudo cmake --install build
+
+      - name: Build qBittorrent
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          cmake \
+            -B build \
+            -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DBOOST_ROOT="${BOOST_ROOT}" \
+            -DBoost_ROOT="${BOOST_ROOT}" \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DOPENSSL_ROOT_DIR="${OPENSSL_PREFIX}" \
+            -DOPENSSL_USE_STATIC_LIBS=TRUE \
+            -DZLIB_ROOT="${ZLIB_ROOT}" \
+            -DZLIB_INCLUDE_DIR="${ZLIB_INCLUDE_DIR}" \
+            -DZLIB_LIBRARY="${ZLIB_LIBRARY}" \
+            -DZLIB_USE_STATIC_LIBS=ON \
+            -DTESTING=ON \
+            -DVERBOSE_CONFIGURE=ON \
+            -D${{ matrix.qbt_gui }}
+          cmake -LA -N build | grep -E '^(Boost|ZLIB)_' || true
+          cmake --build build --target qbt_update_translations
+          cmake --build build
+          cmake --build build --target check
+          if [ "${{ matrix.qbt_gui }}" = "GUI=ON" ]; then
+            build/qbittorrent.app/Contents/MacOS/qbittorrent -v
+          else
+            build/qbittorrent-nox.app/Contents/MacOS/qbittorrent-nox -v
+          fi
+
+      - name: Prepare build artifacts
+        run: |
+          appName="qbittorrent"
+          if [ "${{ matrix.qbt_gui }}" = "GUI=OFF" ]; then
+            appName="qbittorrent-nox"
+          fi
+          pushd build
+          # packaging
+          macdeployqt "$appName.app" -no-strip
+          # code signing
+          xattr -cr "$appName.app"
+          codesign --force --sign - \
+            "$appName.app" \
+            "$appName.app/Contents/Frameworks"/* \
+            "$appName.app/Contents/MacOS/$appName"
+          codesign --verify --deep --strict -v "$appName.app"
+          # create .dmg
+          PACKAGE_RETRY=0
+          while [ "$PACKAGE_RETRY" -lt "3" ]; do
+            if hdiutil create -fs HFS+ -srcfolder "$appName.app" -volname "$appName" "$appName.dmg"; then
+              break
+            fi
+            sleep 5
+            PACKAGE_RETRY=$((PACKAGE_RETRY + 1))
+            echo "Retry $PACKAGE_RETRY..."
+          done
+          popd
+          # prepare upload folder
+          mkdir upload
+          cp "build/$appName.dmg" upload
+          mkdir upload/cmake
+          cp build/compile_commands.json upload/cmake
+          mkdir upload/cmake/libtorrent
+          cp ${{ env.libtorrent_path }}/build/compile_commands.json upload/cmake/libtorrent
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: qBittorrent-CI_macOS_${{ matrix.qbt_gui }}_libtorrent-${{ matrix.libtorrent.branch }}
+          path: upload
