@@ -44,6 +44,7 @@ jobs:
           max_attempts: 1
           command: |
             brew update > /dev/null
+            # already preinstalled on the image: cmake ninja
             brew install \
               cmake ninja zlib
             # preinstalled on the image: cmake ninja
