@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 102 88" width="102" height="88">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14.5 7.5 73 73" width="73" height="73">
+  <g transform="translate(2.5 0.5)">
+
   <defs>
     <linearGradient id="lightRim" x1="20%" y1="8%" x2="80%" y2="92%">
       <stop offset="0" stop-color="#ffffff"/>
@@ -21,6 +22,8 @@
   
   <path d="M2.08018 14.9741C2.08018 15.9388 2.63419 16.395 3.30206 16.395C3.59037 16.395 3.90149 16.3037 4.19382 16.1441L15.5707 9.49967C16.379 9.02293 16.6591 8.71392 16.6591 8.19749C16.6591 7.68107 16.379 7.37205 15.5707 6.89532L4.19382 0.250928C3.90149 0.0912467 3.59037 0 3.30206 0C2.63419 0 2.08018 0.456233 2.08018 1.42085Z" fill="#575757" fill-opacity="1"/>
  </g>
+
+  </g>
 
   </g>
 </svg>

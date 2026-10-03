@@ -1,11 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--Generator: Apple Native CoreSVG 360-->
-<!DOCTYPE svg
-PUBLIC "-//W3C//DTD SVG 1.1//EN"
-       "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 8.12032 16.1582">
- <g>
-  <rect height="16.1582" opacity="0" width="8.12032" x="0" y="0"/>
-  <path d="M0.8371 16.1458C1.29293 16.1458 1.67209 15.7852 1.67209 15.3294L1.67209 0.816399C1.67209 0.360566 1.29293 0 0.8371 0C0.379157 0 0 0.360566 0 0.816399L0 15.3294C0 15.7852 0.379157 16.1458 0.8371 16.1458ZM7.28533 16.1458C7.75152 16.1458 8.12032 15.7852 8.12032 15.3294L8.12032 0.816399C8.12032 0.360566 7.75152 0 7.28533 0C6.82739 0 6.44823 0.360566 6.44823 0.816399L6.44823 15.3294C6.44823 15.7852 6.82739 16.1458 7.28533 16.1458Z" fill="#f8f8f8" fill-opacity="1"/>
- </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22">
+ <defs id="defs3051">
+   <style type="text/css" id="current-color-scheme">
+     .ColorScheme-Text {
+       color:#f8f8f8;
+     }
+     </style>
+ </defs>
+   <path
+      style="fill:currentColor;fill-opacity:1;stroke:none"
+      d="m 5.5,5 h 3 C 8.777,5 9,5.223 9,5.5 v 11 C 9,16.777 8.777,17 8.5,17 h -3 C 5.223,17 5,16.777 5,16.5 V 5.5 C 5,5.223 5.223,5 5.5,5 Z"
+      class="ColorScheme-Text" />
+   <path
+      style="fill:currentColor;fill-opacity:1;stroke:none"
+      d="m 13.5,5 h 3 C 16.777,5 17,5.223 17,5.5 v 11 c 0,0.277 -0.223,0.5 -0.5,0.5 h -3 C 13.223,17 13,16.777 13,16.5 V 5.5 C 13,5.223 13.223,5 13.5,5 Z"
+      class="ColorScheme-Text" />
+</svg> 

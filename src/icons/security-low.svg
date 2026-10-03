@@ -1,12 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--Generator: Apple Native CoreSVG 360-->
-<!DOCTYPE svg
-PUBLIC "-//W3C//DTD SVG 1.1//EN"
-       "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16.2328 20.2378">
- <g>
-  <rect height="20.2378" opacity="0" width="16.2328" x="0" y="0"/>
-  <path d="M8.1164 20.2378C8.26824 20.2378 8.51746 20.1753 8.77261 20.0342C14.3169 16.935 16.2328 15.6154 16.2328 12.0535L16.2328 4.5816C16.2328 3.54926 15.7848 3.22929 14.9637 2.8823C13.8109 2.39974 10.083 1.0642 8.92807 0.66254C8.6685 0.575313 8.39456 0.513009 8.1164 0.513009C7.83824 0.513009 7.55395 0.596015 7.30473 0.66254C6.1519 0.989836 2.42194 2.41009 1.267 2.8823C0.447993 3.21683 0 3.54926 0 4.5816L0 12.0535C0 15.6154 1.9222 16.912 7.46019 20.0342C7.71534 20.1753 7.96456 20.2378 8.1164 20.2378ZM8.1164 18.4622C7.96265 18.4622 7.80256 18.41 7.5041 18.24C2.99515 15.4978 1.54999 14.6961 1.54999 11.6934L1.54999 4.87585C1.54999 4.55237 1.61672 4.41892 1.8794 4.30848C3.36045 3.72764 6.24404 2.76232 7.72931 2.17535C7.87502 2.11495 8.01038 2.09405 8.1164 2.09405C8.22242 2.09405 8.35356 2.11706 8.50138 2.17535C9.9763 2.76232 12.8288 3.78974 14.343 4.30848C14.6161 4.40857 14.6725 4.55237 14.6725 4.87585L14.6725 11.6934C14.6725 14.6961 13.2231 15.4915 8.71834 18.24C8.43023 18.41 8.27015 18.4622 8.1164 18.4622Z" fill="#575757" fill-opacity="1"/>
-  <path d="M8.11429 11.6701C8.57856 11.6701 8.84597 11.3963 8.85632 10.8947L9.00143 5.74349C9.01178 5.24183 8.61805 4.86459 8.10394 4.86459C7.58158 4.86459 7.20855 5.23148 7.21679 5.73314L7.3412 10.8947C7.35155 11.386 7.63142 11.6701 8.11429 11.6701ZM8.11429 14.8338C8.68056 14.8338 9.16995 14.3898 9.16995 13.8195C9.16995 13.2553 8.69091 12.8156 8.11429 12.8156C7.53978 12.8156 7.05862 13.2657 7.05862 13.8195C7.05862 14.3794 7.55013 14.8338 8.11429 14.8338Z" fill="#575757" fill-opacity="1"/>
- </g>
-</svg>
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" style="enable-background:new" height="12" width="10" version="1.1" inkscape:version="0.91 r13725" sodipodi:docname="security-low-symbolic.svg"><rect id="backgroundrect" width="100%" height="100%" x="0" y="0" fill="none" stroke="none"/>
+  <sodipodi:namedview pagecolor="#ffffff" bordercolor="#666666" borderopacity="1" objecttolerance="10" gridtolerance="10" guidetolerance="10" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-width="640" inkscape:window-height="480" id="namedview4146" showgrid="false" inkscape:zoom="41.1875" inkscape:cx="3.6783005" inkscape:cy="8" inkscape:current-layer="svg7384"/>
+  <metadata id="metadata90">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <dc:title>Paper Symbolic Icon Theme</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <title id="title8473">Paper Symbolic Icon Theme</title>
+  <defs id="defs7386">
+    <filter id="filter7554" style="color-interpolation-filters:sRGB">
+      <feBlend id="feBlend7556" in2="BackgroundImage" mode="darken"/>
+    </filter>
+  </defs>
+  
+<g class="currentLayer" style=""><title>Layer 1</title><g id="layer9" class="selected" opacity="1" filter="" fill="#575757" fill-opacity="1">
+    <path id="path10649" style="color: rgb(190, 190, 190); text-indent: 0px; text-decoration: none; text-transform: none;" d="m4.800000190734863,0 l-4.800000190734863,1.5921601057052612 l0,5.599999904632568 c0,1.6572799682617188 1.2599200010299683,2.8174400329589844 2.3500001430511475,3.575040102005005 c1.0900800228118896,0.7575439810752869 2.450000047683716,1.232800006866455 2.450000047683716,1.232800006866455 c0,0 1.3634400367736816,-0.4933760166168213 2.450000047683716,-1.2578400373458862 c1.0865600109100342,-0.7644400000572205 2.3500001430511475,-1.9145599603652954 2.3500001430511475,-3.549999952316284 l0,-5.599999904632568 l-4.800000190734863,-1.5921601057052612 zm0,1.685920000076294 l3.200000047683716,1.060960054397583 l0,4.445280075073242 c0,0.8114399909973145 -0.7240480184555054,1.5764800310134888 -1.67031991481781,2.2421600818634033 c-0.6202880144119263,0.43640801310539246 -1.1457599401474,0.6220560073852539 -1.539039969444275,0.7859360575675964 c-0.3920559883117676,-0.15902400016784668 -0.9098400473594666,-0.3375279903411865 -1.5281599760055542,-0.7671840190887451 c-0.9358400702476501,-0.6504000425338745 -1.6624799966812134,-1.414560079574585 -1.6624799966812134,-2.260960102081299 l0,-4.445280075073242 l3.200000047683716,-1.060960054397583 z" inkscape:connector-curvature="0" stroke-width="0" opacity="1" filter="" fill="#575757" fill-opacity="1"/>
+  </g></g></svg>
