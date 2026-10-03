@@ -46,7 +46,7 @@ jobs:
             brew update > /dev/null
             # already preinstalled on the image: cmake ninja
             brew install \
-              cmake ninja zlib
+              ninja zlib
             # preinstalled on the image: cmake ninja
 
       - name: Install Boost and zlib
