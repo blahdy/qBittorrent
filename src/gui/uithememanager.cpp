@@ -429,9 +429,7 @@ void UIThemeManager::refreshSystemAppearance()
 
 void UIThemeManager::refreshNativeAppearance(const bool useConfiguredStyle)
 {
-    if (!m_appliedStyleSheet.isEmpty())
-        qApp->setStyleSheet({});
-
+    qApp->setStyleSheet({});
     qApp->setPalette(QPalette {});
 
     applyStyle(useConfiguredStyle);
