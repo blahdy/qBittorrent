@@ -263,7 +263,6 @@ MainWindow::MainWindow(IGUIApplication *app, const WindowState initialState, con
 
     m_columnFilterEdit = new LineEdit;
 #ifdef Q_OS_MACOS
-    m_columnFilterEdit->setFrame(false);
     m_columnFilterEdit->setStyleSheet(QStringLiteral(
         "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
         " background-color: palette(base); }"));
