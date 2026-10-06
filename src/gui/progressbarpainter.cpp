@@ -84,7 +84,19 @@ void ProgressBarPainter::paint(QPainter *painter, const QStyleOptionViewItem &op
     painter->save();
     const QStyle *style = m_dummyProgressBar.style();
     style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
-    style->drawControl(QStyle::CE_ProgressBar, &styleOption, painter, &m_dummyProgressBar);
+
+    if (styleOption.progress <= styleOption.minimum)
+    {
+        // Fusion draws a 1-pixel highlight edge at the left side of an empty
+        // progress bar. Draw only the groove and label at 0% to avoid it.
+        style->drawControl(QStyle::CE_ProgressBarGroove, &styleOption, painter, &m_dummyProgressBar);
+        style->drawControl(QStyle::CE_ProgressBarLabel, &styleOption, painter, &m_dummyProgressBar);
+    }
+    else
+    {
+        style->drawControl(QStyle::CE_ProgressBar, &styleOption, painter, &m_dummyProgressBar);
+    }
+
     painter->restore();
 }
 

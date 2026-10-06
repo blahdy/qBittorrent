@@ -80,6 +80,7 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     // Torrent content filtering
     m_contentFilterLine = new LineEdit(this);
 #ifdef Q_OS_MACOS
+    m_contentFilterLine->setFrame(false);
     m_contentFilterLine->setStyleSheet(QStringLiteral(
         "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
         " background-color: palette(base); }"));
