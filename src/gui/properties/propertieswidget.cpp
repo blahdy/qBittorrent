@@ -83,7 +83,6 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     m_contentFilterLine->setStyleSheet(QStringLiteral(
         "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
         " background-color: palette(base); }"));
-    m_contentFilterLine->setFixedHeight(m_contentFilterLine->sizeHint().height());
 #endif
     m_contentFilterLine->setPlaceholderText(tr("Filter files..."));
     m_contentFilterLine->setFixedWidth(300);
