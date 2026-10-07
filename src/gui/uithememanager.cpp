@@ -380,12 +380,17 @@ void UIThemeManager::applyStyle(const bool useConfiguredStyle) const
     }
 
     const QString styleName = Preferences::instance()->getStyle();
+    const QString currentStyleName = QApplication::style()->name();
+
     if (styleName.compare(u"system"_s, Qt::CaseInsensitive) != 0)
     {
-        if (!QApplication::setStyle(styleName))
-            LogMsg(tr("Set app style failed. Unknown style: \"%1\"").arg(styleName), Log::WARNING);
+        if (styleName.compare(currentStyleName, Qt::CaseInsensitive) != 0)
+        {
+            if (!QApplication::setStyle(styleName))
+                LogMsg(tr("Set app style failed. Unknown style: \"%1\"").arg(styleName), Log::WARNING);
+        }
     }
-    else
+    else if (m_defaultStyleName.compare(currentStyleName, Qt::CaseInsensitive) != 0)
     {
         QApplication::setStyle(m_defaultStyleName);
     }
