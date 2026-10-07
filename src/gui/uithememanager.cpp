@@ -37,7 +37,6 @@
 #include <QEvent>
 #include <QHeaderView>
 #include <QIconEngine>
-#include <QLineEdit>
 #include <QPalette>
 #include <QPainter>
 #include <QPixmapCache>
@@ -157,20 +156,10 @@ namespace
     {
         const QWidgetList widgets = widgetsForRepolish();
         for (QWidget *widget : widgets)
-        {
-#ifdef Q_OS_MACOS
-            if (qobject_cast<QLineEdit *>(widget))
-                continue;
-#endif
             widget->style()->unpolish(widget);
-        }
 
         for (QWidget *widget : widgets)
         {
-#ifdef Q_OS_MACOS
-            if (qobject_cast<QLineEdit *>(widget))
-                continue;
-#endif
             widget->style()->polish(widget);
             widget->updateGeometry();
             widget->update();
