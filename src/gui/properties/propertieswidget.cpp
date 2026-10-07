@@ -36,6 +36,8 @@
 #include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPainter>
+#include <QPainterPath>
 #include <QPointer>
 #include <QSplitter>
 #include <QShortcut>
@@ -65,6 +67,39 @@
 #include "speedwidget.h"
 #include "ui_propertieswidget.h"
 
+#ifdef Q_OS_MACOS
+class MacSearchLineEdit final : public LineEdit
+{
+public:
+    using LineEdit::LineEdit;
+
+protected:
+    void paintEvent(QPaintEvent *event) override
+    {
+        QPainter painter(this);
+        painter.setRenderHint(QPainter::Antialiasing);
+
+        const qreal radius = height() / 2.0;
+        const QRectF frame = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+        QPainterPath clipPath;
+        clipPath.addRoundedRect(QRectF(rect()), radius, radius);
+
+        painter.setPen(QPen(palette().color(QPalette::Mid), 1.0));
+        painter.setBrush(palette().color(QPalette::Base));
+        painter.drawRoundedRect(frame, radius, radius);
+
+        painter.save();
+        painter.setClipPath(clipPath);
+        LineEdit::paintEvent(event);
+        painter.restore();
+
+        painter.setPen(QPen(palette().color(QPalette::Mid), 1.0));
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRoundedRect(frame, radius, radius);
+    }
+};
+#endif
+
 PropertiesWidget::PropertiesWidget(QWidget *parent)
     : QWidget(parent)
     , m_ui {new Ui::PropertiesWidget}
@@ -78,11 +113,13 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     m_state = VISIBLE;
 
     // Torrent content filtering
-    m_contentFilterLine = new LineEdit(this);
 #ifdef Q_OS_MACOS
+    m_contentFilterLine = new MacSearchLineEdit(this);
+    m_contentFilterLine->setFrame(false);
     m_contentFilterLine->setStyleSheet(QStringLiteral(
-        "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
-        " background-color: palette(base); }"));
+        "QLineEdit { border: none; border-radius: 0px; padding: 1px 10px; background: transparent; }"));
+#else
+    m_contentFilterLine = new LineEdit(this);
 #endif
     m_contentFilterLine->setPlaceholderText(tr("Filter files..."));
     m_contentFilterLine->setFixedWidth(300);
@@ -281,11 +318,11 @@ LineEdit *PropertiesWidget::contentFilterLine() const
 
 void PropertiesWidget::loadUIThemeResources()
 {
-  #ifdef Q_OS_MACOS
-      m_contentFilterLine->setStyleSheet(QStringLiteral(
-          "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
-          " background-color: palette(base); }"));
-  #endif
+#ifdef Q_OS_MACOS
+    m_contentFilterLine->setFrame(false);
+    m_contentFilterLine->setStyleSheet(QStringLiteral(
+        "QLineEdit { border: none; border-radius: 0px; padding: 1px 10px; background: transparent; }"));
+#endif
 
     m_ui->trackerUpButton->setIconSize(Utils::Gui::smallIconSize());
     m_ui->trackerDownButton->setIconSize(Utils::Gui::smallIconSize());
