@@ -36,8 +36,6 @@
 #include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
-#include <QPainter>
-#include <QPainterPath>
 #include <QPointer>
 #include <QSplitter>
 #include <QShortcut>
@@ -80,14 +78,11 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     m_state = VISIBLE;
 
     // Torrent content filtering
-#ifdef Q_OS_MACOS
     m_contentFilterLine = new LineEdit(this);
-    m_contentFilterLine->setFrame(false);
+#ifdef Q_OS_MACOS
     m_contentFilterLine->setStyleSheet(QStringLiteral(
         "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
         " background-color: palette(base); }"));
-#else
-    m_contentFilterLine = new LineEdit(this);
 #endif
     m_contentFilterLine->setPlaceholderText(tr("Filter files..."));
     m_contentFilterLine->setFixedWidth(300);
@@ -287,12 +282,10 @@ LineEdit *PropertiesWidget::contentFilterLine() const
 void PropertiesWidget::loadUIThemeResources()
 {
 #ifdef Q_OS_MACOS
-    m_contentFilterLine->setFrame(false);
     m_contentFilterLine->setStyleSheet(QStringLiteral(
         "QLineEdit { border: 1px solid palette(mid); border-radius: 14px; padding: 1px 10px;"
         " background-color: palette(base); }"));
 #endif
-
     m_ui->trackerUpButton->setIconSize(Utils::Gui::smallIconSize());
     m_ui->trackerDownButton->setIconSize(Utils::Gui::smallIconSize());
     m_ui->trackerUpButton->setIcon(UIThemeManager::instance()->getIcon(u"go-up"_s));

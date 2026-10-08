@@ -1,4 +1,4 @@
-name: CI - macOS
+name: ARM
 
 on: [pull_request, push]
 
