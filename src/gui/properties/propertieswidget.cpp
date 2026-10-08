@@ -31,6 +31,8 @@
 
 #include <QClipboard>
 #include <QDateTime>
+#include <QFrame>
+#include <QHBoxLayout>
 #include <QDebug>
 #include <QFuture>
 #include <QListWidgetItem>
@@ -78,9 +80,25 @@ PropertiesWidget::PropertiesWidget(QWidget *parent)
     m_state = VISIBLE;
 
     // Torrent content filtering
+#ifdef Q_OS_MACOS
+    auto *contentFilterFrame = new QFrame(this);
+    contentFilterFrame->setFixedWidth(300);
+    contentFilterFrame->setStyleSheet(QStringLiteral(
+        "QFrame { border: 1px solid palette(mid); border-radius: 999px; background-color: palette(base); }"));
+
+    auto *contentFilterLayout = new QHBoxLayout(contentFilterFrame);
+    contentFilterLayout->setContentsMargins(1, 1, 1, 1);
+    contentFilterLayout->setSpacing(0);
+
+    m_contentFilterLine = new LineEdit(contentFilterFrame);
+    m_contentFilterLine->setFrame(false);
+    m_contentFilterLine->setStyleSheet(QStringLiteral(
+        "QLineEdit { border: none; background: transparent; padding: 1px 9px; }"));
+    contentFilterLayout->addWidget(m_contentFilterLine);
+#else
     m_contentFilterLine = new LineEdit(this);
+#endif
     m_contentFilterLine->setPlaceholderText(tr("Filter files..."));
-    m_contentFilterLine->setFixedWidth(300);
     m_contentFilterLine->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(m_contentFilterLine, &QWidget::customContextMenuRequested, this, &PropertiesWidget::showContentFilterContextMenu);
     connect(m_contentFilterLine, &LineEdit::textUpdated, this, &PropertiesWidget::setContentFilterPattern);
@@ -276,6 +294,16 @@ LineEdit *PropertiesWidget::contentFilterLine() const
 
 void PropertiesWidget::loadUIThemeResources()
 {
+#ifdef Q_OS_MACOS
+    if (auto *contentFilterFrame = qobject_cast<QFrame *>(m_contentFilterLine->parentWidget()))
+    {
+        contentFilterFrame->setStyleSheet(QStringLiteral(
+            "QFrame { border: 1px solid palette(mid); border-radius: 999px; background-color: palette(base); }"));
+        m_contentFilterLine->setStyleSheet(QStringLiteral(
+            "QLineEdit { border: none; background: transparent; padding: 1px 9px; }"));
+    }
+#endif
+
     m_ui->trackerUpButton->setIconSize(Utils::Gui::smallIconSize());
     m_ui->trackerDownButton->setIconSize(Utils::Gui::smallIconSize());
     m_ui->trackerUpButton->setIcon(UIThemeManager::instance()->getIcon(u"go-up"_s));
