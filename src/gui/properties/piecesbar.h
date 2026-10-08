@@ -79,6 +79,7 @@ protected:
     static QRgb mixTwoColors(QRgb rgb1, QRgb rgb2, float ratio);
 
     static constexpr int borderWidth = 1;
+    virtual qreal frameRadius() const { return 0; }
 
 private:
     void refreshTheme();
