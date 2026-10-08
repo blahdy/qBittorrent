@@ -179,19 +179,7 @@ void PiecesBar::mouseMoveEvent(QMouseEvent *e)
 void PiecesBar::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing, frameRadius() > 0);
-
-    const QRect imageRect(borderWidth, borderWidth, width() - 2 * borderWidth, height() - 2 * borderWidth);
-    const qreal radius = frameRadius();
-
-    if (radius > 0)
-    {
-        QPainterPath clipPath;
-        clipPath.addRoundedRect(QRectF(imageRect), radius - borderWidth, radius - borderWidth);
-        painter.save();
-        painter.setClipPath(clipPath);
-    }
-
+    QRect imageRect(borderWidth, borderWidth, width() - 2 * borderWidth, height() - 2 * borderWidth);
     if (m_image.isNull())
     {
         painter.setBrush(backgroundColor());
@@ -213,16 +201,9 @@ void PiecesBar::paintEvent(QPaintEvent *)
         painter.fillRect(targetHighlightRect, highlightedPieceColor());
     }
 
-    if (radius > 0)
-        painter.restore();
-
     QPainterPath border;
-    if (radius > 0)
-        border.addRoundedRect(QRectF(0, 0, width(), height()), radius, radius);
-    else
-        border.addRect(0, 0, width(), height());
+    border.addRect(0, 0, width(), height());
     painter.setPen(borderColor());
-    painter.setBrush(Qt::NoBrush);
     painter.drawPath(border);
 }
 

@@ -46,16 +46,6 @@ public:
     // PiecesBar interface
     void clear() override;
 
-protected:
-    qreal frameRadius() const override
-    {
-#ifdef Q_OS_MACOS
-        return 9.0;
-#else
-        return 0;
-#endif
-    }
-
 private:
     QImage renderImage() override;
     QString simpleToolTipText() const override;
