@@ -43,7 +43,7 @@ jobs:
           retry_wait_seconds: 20
           max_attempts: 1
           command: |
-            brew uninstall azure-cli ca-certificates openssl
+            brew uninstall --ignore-dependencies azure-cli ca-certificates openssl
             brew update > /dev/null
             # already preinstalled on the image: cmake ninja
             brew install \
