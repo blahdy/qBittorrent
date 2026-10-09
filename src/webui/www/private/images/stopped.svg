@@ -1,1 +1,22 @@
-<svg fill="#808080" height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg"><path d="m2 25.824272c0 2.62569 1.5123781 4.175729 4.0487613 4.175729h19.9024767c2.536384 0 4.048762-1.550039 4.048762-4.175729v-19.6485431c0-2.6256897-1.512378-4.1757289-4.048762-4.1757289h-19.9024767c-2.5363832 0-4.0487613 1.5500392-4.0487613 4.1757289zm0 0" stroke-width="1.47623"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22">
+<style type="text/css"><![CDATA[
+@media (prefers-color-scheme: dark) {
+  svg { filter: invert(1); }
+}
+]]></style>
+ <defs id="defs3051">
+   <style type="text/css" id="current-color-scheme">
+     .ColorScheme-Text {
+       color:#131313;
+     }
+     </style>
+ </defs>
+   <path
+      style="fill:currentColor;fill-opacity:1;stroke:none"
+      d="m 5.5,5 h 3 C 8.777,5 9,5.223 9,5.5 v 11 C 9,16.777 8.777,17 8.5,17 h -3 C 5.223,17 5,16.777 5,16.5 V 5.5 C 5,5.223 5.223,5 5.5,5 Z"
+      class="ColorScheme-Text" />
+   <path
+      style="fill:currentColor;fill-opacity:1;stroke:none"
+      d="m 13.5,5 h 3 C 16.777,5 17,5.223 17,5.5 v 11 c 0,0.277 -0.223,0.5 -0.5,0.5 h -3 C 13.223,17 13,16.777 13,16.5 V 5.5 C 13,5.223 13.223,5 13.5,5 Z"
+      class="ColorScheme-Text" />
+</svg> 

@@ -1,1 +1,22 @@
-<svg height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg"><g fill="#ff8c00" stroke="#ff8c00" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.458" transform="matrix(1.3141898 0 0 1.0646346 -4.824252 -1.566469)"><path d="m8.1321547 5.07899h2.4210093c.67062 0 1.210505.6702329 1.210505 1.5027643v19.8364877c0 .832531-.539885 1.502764-1.210505 1.502764h-2.4210093c-.6706196 0-1.2105048-.670233-1.2105048-1.502764v-19.8364877c0-.8325314.5398852-1.5027643 1.2105048-1.5027643z"/><path d="m21.138228 5.07899h2.421009c.67062 0 1.210505.6702329 1.210505 1.5027643v19.8364877c0 .832531-.539885 1.502764-1.210505 1.502764h-2.421009c-.67062 0-1.210505-.670233-1.210505-1.502764v-19.8364877c0-.8325314.539885-1.5027643 1.210505-1.5027643z"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22">
+<style type="text/css"><![CDATA[
+@media (prefers-color-scheme: dark) {
+  svg { filter: invert(1); }
+}
+]]></style>
+ <defs id="defs3051">
+   <style type="text/css" id="current-color-scheme">
+     .ColorScheme-Text {
+       color:#131313;
+     }
+     </style>
+ </defs>
+   <path
+      style="fill:currentColor;fill-opacity:1;stroke:none"
+      d="m 5.5,5 h 3 C 8.777,5 9,5.223 9,5.5 v 11 C 9,16.777 8.777,17 8.5,17 h -3 C 5.223,17 5,16.777 5,16.5 V 5.5 C 5,5.223 5.223,5 5.5,5 Z"
+      class="ColorScheme-Text" />
+   <path
+      style="fill:currentColor;fill-opacity:1;stroke:none"
+      d="m 13.5,5 h 3 C 16.777,5 17,5.223 17,5.5 v 11 c 0,0.277 -0.223,0.5 -0.5,0.5 h -3 C 13.223,17 13,16.777 13,16.5 V 5.5 C 13,5.223 13.223,5 13.5,5 Z"
+      class="ColorScheme-Text" />
+</svg> 
