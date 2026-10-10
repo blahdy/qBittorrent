@@ -55,8 +55,8 @@ namespace BitTorrent
         Path savePath;
         std::optional<bool> useDownloadPath;
         Path downloadPath;
-        bool sequential = true;
-        bool firstLastPiecePriority = true;
+        bool sequential = false;
+        bool firstLastPiecePriority = false;
         bool addForced = false;
         std::optional<bool> addToQueueTop;
         std::optional<bool> addStopped;
