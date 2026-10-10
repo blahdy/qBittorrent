@@ -1067,6 +1067,16 @@
                 </widget>
                </item>
                <item>
+                <widget class="QCheckBox" name="checkSequentialDownloadByDefault">
+                 <property name="toolTip">
+                  <string>New torrents will download pieces sequentially and prioritize the first and last pieces.</string>
+                 </property>
+                 <property name="text">
+                  <string>Download sequentially by default (prioritize first and last pieces)</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QCheckBox" name="checkAddStopped">
                  <property name="toolTip">
                   <string>The torrent will be added to download list in a stopped state</string>

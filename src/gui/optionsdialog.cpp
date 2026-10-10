@@ -654,6 +654,7 @@ void OptionsDialog::loadDownloadsTabOptions()
 
     m_ui->contentLayoutComboBox->setCurrentIndex(static_cast<int>(session->torrentContentLayout()));
     m_ui->checkAddToQueueTop->setChecked(session->isAddTorrentToQueueTop());
+    m_ui->checkSequentialDownloadByDefault->setChecked(pref->isSequentialDownloadByDefault());
     m_ui->checkAddStopped->setChecked(session->isAddTorrentStopped());
 
     m_ui->stopConditionComboBox->setToolTip(
@@ -848,6 +849,7 @@ void OptionsDialog::loadDownloadsTabOptions()
     connect(m_ui->deleteCancelledTorrentBox, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
 
     connect(m_ui->checkPreallocateAll, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
+    connect(m_ui->checkSequentialDownloadByDefault, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkAppendqB, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkUnwantedFolder, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
     connect(m_ui->checkRecursiveDownload, &QAbstractButton::toggled, this, &ThisType::enableApplyButton);
@@ -904,6 +906,7 @@ void OptionsDialog::saveDownloadsTabOptions() const
     session->setTorrentContentLayout(static_cast<BitTorrent::TorrentContentLayout>(m_ui->contentLayoutComboBox->currentIndex()));
 
     session->setAddTorrentToQueueTop(m_ui->checkAddToQueueTop->isChecked());
+    pref->setSequentialDownloadByDefault(m_ui->checkSequentialDownloadByDefault->isChecked());
     session->setAddTorrentStopped(addTorrentsStopped());
     session->setTorrentStopCondition(m_ui->stopConditionComboBox->currentData().value<BitTorrent::Torrent::StopCondition>());
 

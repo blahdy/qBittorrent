@@ -102,10 +102,17 @@ bool GUIAddTorrentManager::addTorrent(const QString &source, const BitTorrent::A
 
     const auto *pref = Preferences::instance();
 
+    BitTorrent::AddTorrentParams effectiveParams = params;
+    if (pref->isSequentialDownloadByDefault())
+    {
+        effectiveParams.sequential = true;
+        effectiveParams.firstLastPiecePriority = true;
+    }
+
     if ((option == AddTorrentOption::SkipDialog)
             || ((option == AddTorrentOption::Default) && !pref->isAddNewTorrentDialogEnabled()))
     {
-        return AddTorrentManager::addTorrent(source, params);
+        return AddTorrentManager::addTorrent(source, effectiveParams);
     }
 
     if (Net::DownloadManager::hasSupportedScheme(source))
@@ -117,14 +124,14 @@ bool GUIAddTorrentManager::addTorrent(const QString &source, const BitTorrent::A
         // Launch downloader
         Net::DownloadManager::instance()->download(Net::DownloadRequest(source).limit(pref->getTorrentFileSizeLimit())
                 , pref->useProxyForGeneralPurposes(), this, &GUIAddTorrentManager::onDownloadFinished);
-        m_downloadedTorrents[source] = params;
+        m_downloadedTorrents[source] = effectiveParams;
 
         return true;
     }
 
     if (const auto parseResult = BitTorrent::TorrentDescriptor::parse(source))
     {
-        return processTorrent(source, parseResult.value(), params);
+        return processTorrent(source, parseResult.value(), effectiveParams);
     }
     else if (source.startsWith(u"magnet:", Qt::CaseInsensitive))
     {
@@ -138,7 +145,7 @@ bool GUIAddTorrentManager::addTorrent(const QString &source, const BitTorrent::A
     if (const auto loadResult = BitTorrent::TorrentDescriptor::loadFromFile(decodedPath))
     {
         const BitTorrent::TorrentDescriptor &torrentDescriptor = loadResult.value();
-        const bool isProcessing = processTorrent(source, torrentDescriptor, params);
+        const bool isProcessing = processTorrent(source, torrentDescriptor, effectiveParams);
         if (isProcessing)
             setTorrentFileGuard(source, torrentFileGuard);
         return isProcessing;

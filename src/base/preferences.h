@@ -301,6 +301,8 @@ public:
 #endif
     bool isRecursiveDownloadEnabled() const;
     void setRecursiveDownloadEnabled(bool enable);
+    bool isSequentialDownloadByDefault() const;
+    void setSequentialDownloadByDefault(bool enable);
     int getTrackerPort() const;
     void setTrackerPort(int port);
     bool isTrackerPortForwardingEnabled() const;

@@ -1454,6 +1454,19 @@ void Preferences::setRecursiveDownloadEnabled(const bool enable)
     setValue(u"Preferences/Advanced/DisableRecursiveDownload"_s, !enable);
 }
 
+bool Preferences::isSequentialDownloadByDefault() const
+{
+    return value(u"Downloads/SequentialDownloadByDefault"_s, false);
+}
+
+void Preferences::setSequentialDownloadByDefault(const bool enable)
+{
+    if (enable == isSequentialDownloadByDefault())
+        return;
+
+    setValue(u"Downloads/SequentialDownloadByDefault"_s, enable);
+}
+
 int Preferences::getTrackerPort() const
 {
     return value<int>(u"Preferences/Advanced/trackerPort"_s, 9000);
