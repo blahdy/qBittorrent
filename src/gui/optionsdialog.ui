@@ -1072,7 +1072,7 @@
                   <string>New torrents will download pieces sequentially and prioritize the first and last pieces.</string>
                  </property>
                  <property name="text">
-                  <string>Download sequentially by default (prioritize first and last pieces)</string>
+                  <string>Download sequentially by default</string>
                  </property>
                 </widget>
                </item>
