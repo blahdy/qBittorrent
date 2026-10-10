@@ -1,6 +1,15 @@
-<svg height="32" viewBox="0 0 32 32" width="32" xmlns="http://www.w3.org/2000/svg">
-<style type="text/css"><![CDATA[
-@media (prefers-color-scheme: dark) {
-  svg { filter: invert(1); }
-}
-]]></style><path d="m62 48c-7.731619 0-14 6.268381-14 14s6.268381 14 14 14 14-6.268381 14-14-6.268381-14-14-14zm-6.826172 10.21875h13.652344c1.001007 0 1.540059 1.251253.888672 2.0625l-6.824219 8.5a1.1719094 1.2504823 0 0 1 -1.779297 0l-6.826172-8.5c-.653336-.811247-.112332-2.0625.888672-2.0625z" fill="#131313" transform="translate(-46 -46)"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg
+PUBLIC "-//W3C//DTD SVG 1.1//EN"
+       "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 15.5272 15.9494">
+  <style type="text/css"><![CDATA[
+  @media (prefers-color-scheme: dark) {
+    svg { filter: invert(1); }
+  }
+  ]]></style>
+ <g>
+  <rect height="15.9494" opacity="0" width="15.5272" x="0" y="0"/>
+  <path d="M15.5272 1.19867C15.5272 0.470804 14.984 0.0228117 14.1254 0.0228117L1.40397 0.0124609C0.55361 0.0124609-2.22045e-16 0.460454-2.22045e-16 1.18832C-2.22045e-16 1.58436 0.167922 1.89528 0.375337 2.31222L6.45828 14.8443C6.86869 15.6879 7.24614 15.9494 7.76467 15.9494C8.2811 15.9494 8.65855 15.6879 9.06896 14.8443L15.154 2.31222C15.3593 1.90563 15.5272 1.59471 15.5272 1.19867Z" fill="#131313" fill-opacity="1"/>
+ </g>
+</svg>
