@@ -281,7 +281,7 @@ bool TorrentContentModel::setItemPriority(const QModelIndex &index, BitTorrent::
     const QList<ColumnInterval> columns =
     {
         {TorrentContentModelItem::COL_NAME, TorrentContentModelItem::COL_NAME},
-        {TorrentContentModelItem::COL_PRIO, TorrentContentModelItem::COL_PRIO}
+        {TorrentContentModelItem::COL_PROGRESS, TorrentContentModelItem::COL_AVAILABILITY}
     };
     notifySubtreeUpdated(index, columns);
 
@@ -876,9 +876,7 @@ void TorrentContentModel::refresh()
     const QList<ColumnInterval> columns =
     {
         {TorrentContentModelItem::COL_NAME, TorrentContentModelItem::COL_NAME},
-        {TorrentContentModelItem::COL_PROGRESS, TorrentContentModelItem::COL_PROGRESS},
-        {TorrentContentModelItem::COL_PRIO, TorrentContentModelItem::COL_PRIO},
-        {TorrentContentModelItem::COL_AVAILABILITY, TorrentContentModelItem::COL_AVAILABILITY}
+        {TorrentContentModelItem::COL_PROGRESS, TorrentContentModelItem::COL_AVAILABILITY}
     };
     notifySubtreeUpdated(index(0, 0), columns);
 }
