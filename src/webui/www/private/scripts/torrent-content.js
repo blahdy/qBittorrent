@@ -550,6 +550,34 @@ window.qBittorrent.TorrentContent ??= (() => {
         });
 
         torrentFilesTable.setup(tableId, "torrentFilesTableFixedHeaderDiv", torrentFilesContextMenu);
+        torrentFilesTable.dynamicTableDiv.addEventListener("dblclick", (event) => {
+            // In the torrent properties view, double-clicking a file opens its SMB URL.
+            // The WebUI hostname is used as the SMB host, and the torrent save path
+            // is appended to it as requested (e.g. /storage/downloads/folder/file.jpg).
+            const torrentID = torrentsTable.getCurrentTorrentID();
+            if (torrentID.length === 0)
+                return;
+
+            const row = event.target.closest("tr");
+            if ((row === null) || (row.parentElement !== torrentFilesTable.tableBody))
+                return;
+
+            const rowID = row.rowId;
+            const node = (rowID !== undefined) ? torrentFilesTable.getNode(rowID) : null;
+            if ((node === null) || node.isFolder)
+                return;
+
+            const torrentRow = torrentsTable.getRow(torrentID);
+            // Use this torrent's save path, followed by the clicked file's relative path.
+            const savePath = torrentsTable.getRowData(torrentRow, true).save_path.replaceAll("\\", "/").replace(/\/+$/, "");
+            const relativePath = [];
+            for (let current = node; current && current.depth > 0; current = current.parent)
+                relativePath.unshift(current.name);
+
+            const path = `${savePath}/${relativePath.join("/")}`;
+            const encodedPath = path.split("/").map((part, index) => index === 0 ? "" : encodeURIComponent(part)).join("/");
+            window.location.href = `smb://${window.location.hostname}${encodedPath}`;
+        });
         torrentFilesTable.headerCheckboxClickHandler = switchGlobalCheckboxState;
         torrentFilesTable.injectHeaderCheckbox();
 
