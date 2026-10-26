@@ -50,6 +50,7 @@
 #include <QMessageBox>
 #include <QMetaObject>
 #include <QMimeData>
+#include <QOverload>
 #include <QProcess>
 #include <QPushButton>
 #include <QShortcut>
