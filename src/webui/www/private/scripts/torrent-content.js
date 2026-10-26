@@ -550,7 +550,7 @@ window.qBittorrent.TorrentContent ??= (() => {
         });
 
         torrentFilesTable.setup(tableId, "torrentFilesTableFixedHeaderDiv", torrentFilesContextMenu);
-        torrentFilesTable.dynamicTableDiv.addEventListener("dblclick", (event) => {
+        torrentFilesTable.dynamicTableDiv.addEventListener("click", (event) => {
             // In the torrent properties view, double-clicking a file opens its SMB URL.
             // The WebUI hostname is used as the SMB host, and the torrent save path
             // is appended to it as requested (e.g. /storage/downloads/folder/file.jpg).
