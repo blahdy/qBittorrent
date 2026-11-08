@@ -39,7 +39,7 @@ jobs:
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
         with:
-          timeout_seconds: 120
+          timeout_seconds: 300
           retry_wait_seconds: 20
           max_attempts: 1
           command: |
